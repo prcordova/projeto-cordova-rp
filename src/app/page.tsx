@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FIVEM_CONNECT, SERVER_IP } from "@/lib/connect";
 
 const cards = [
   { href: "/loja", title: "Loja", description: "Adquira VIP e benefícios.", image: "/imagens/loja.png" },
@@ -17,8 +18,8 @@ export default function HomePage() {
       <section className="rounded-2xl border border-yellow-400/40 bg-black p-6">
         <p className="text-sm font-bold tracking-widest text-yellow-400">CIDADE CORDOVA RP</p>
         <h1 className="mt-2 text-3xl font-extrabold">Roleplay, economia e facções.</h1>
-        <p className="mt-3 max-w-2xl text-white/75">Abra o FiveM, aperte F8 e cole o comando abaixo. A whitelist fica no Discord.</p>
-        <p className="mt-4 inline-block rounded-xl bg-yellow-400 px-4 py-3 font-bold text-black">connect 45.146.81.194</p>
+        <p className="mt-3 max-w-2xl text-white/75">A whitelist fica no Discord. O botão abre o FiveM direto na cidade.</p>
+        <a href={FIVEM_CONNECT} className="mt-4 inline-block rounded-xl bg-yellow-400 px-4 py-3 font-bold text-black">Conectar {SERVER_IP}</a>
       </section>
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => {

@@ -9,6 +9,7 @@ export type SessionUser = {
   id: string;
   email: string;
   name: string;
+  avatar: string | null;
   emailVerified: boolean;
 };
 
@@ -57,6 +58,7 @@ export async function readSession(): Promise<SessionUser | null> {
       id: String(user._id),
       email: user.email,
       name: String(user.name || "Cidadão"),
+      avatar: typeof user.avatar === "string" ? user.avatar : null,
       emailVerified: Boolean(user.emailVerified)
     };
   } catch {
