@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import { getDb } from "./db";
-import { findProduct } from "./products";
+import { findProduct } from "./catalog-server";
 
 export function siteUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");

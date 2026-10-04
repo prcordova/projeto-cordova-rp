@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { actionByValue } from "@/lib/actions";
 import { getDb } from "@/lib/db";
-import { loadDbProducts } from "@/lib/catalog";
+import { loadDbProducts } from "@/lib/catalog-server";
 import { readSession } from "@/lib/session";
 import { productSchema } from "@/lib/validators";
 

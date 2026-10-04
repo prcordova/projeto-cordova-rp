@@ -1,5 +1,6 @@
 import { ProductCard } from "@/components/ProductCard";
-import { categoryLabels, loadCatalog, type ShopCategory } from "@/lib/catalog";
+import { loadCatalog } from "@/lib/catalog-server";
+import { categoryLabels, type ShopCategory } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
 
