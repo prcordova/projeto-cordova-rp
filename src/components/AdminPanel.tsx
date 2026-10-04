@@ -84,7 +84,7 @@ export function AdminPanel() {
     if (data.ok) reload().catch(() => undefined);
   }
 
-  const fields = action?.fields || [];
+  const fields = (action?.fields || []) as readonly string[];
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">

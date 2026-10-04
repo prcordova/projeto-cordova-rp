@@ -14,11 +14,12 @@ async function admin() {
 function paramsReady(action: string, params: { spawn?: string; item?: string; amount?: number; days?: number | null; group?: string }) {
   const spec = actionByValue(action);
   if (!spec) return "Ação inválida.";
-  if (spec.fields.includes("spawn") && !params.spawn) return "Informe o spawn do veículo.";
-  if (spec.fields.includes("item") && !params.item) return "Informe o nome do item.";
-  if (spec.fields.includes("amount") && !params.amount) return "Informe a quantidade.";
-  if (spec.fields.includes("group") && !params.group) return "Informe o grupo ou a permissão.";
-  if (spec.fields.includes("days") && action === "iniciaraluguelcarro" && !params.days) return "Informe os dias do aluguel.";
+  const fields = spec.fields as readonly string[];
+  if (fields.includes("spawn") && !params.spawn) return "Informe o spawn do veículo.";
+  if (fields.includes("item") && !params.item) return "Informe o nome do item.";
+  if (fields.includes("amount") && !params.amount) return "Informe a quantidade.";
+  if (fields.includes("group") && !params.group) return "Informe o grupo ou a permissão.";
+  if (fields.includes("days") && action === "iniciaraluguelcarro" && !params.days) return "Informe os dias do aluguel.";
   return "";
 }
 

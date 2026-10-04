@@ -61,7 +61,7 @@ function draft(item: Draft): Product {
   };
 }
 
-const vipPlans: Draft[] = [
+const vipPlans: Product[] = [
   ["Bronze", "VIP Bronze", 24.99, "vip_bronze.png", "Bronze", 6, 200, 50000, ["30 dias", "Salário de R$ 200 por hora", "Garagem com 6 vagas", "/attachs e /cor", "Bônus de $50.000 no banco"]],
   ["Prata", "VIP Prata", 49.99, "vip_prata.png", "Prata", 8, 400, 80000, ["30 dias", "Salário de R$ 400 por hora", "Garagem com 8 vagas", "/attachs e /cor", "Bônus de $80.000 no banco"]],
   ["Ouro", "VIP Ouro", 89.99, "vip_ouro.png", "Ouro", 10, 600, 100000, ["30 dias", "Salário de R$ 600 por hora", "Garagem com 10 vagas", "Troca de roupa sem o item", "Bônus de $100.000 no banco"]],
@@ -69,10 +69,10 @@ const vipPlans: Draft[] = [
   ["Diamante", "VIP Diamante", 249.99, "vip_diamante.png", "Diamante", 20, 1000, 500000, ["30 dias", "Salário de R$ 1.000 por hora", "Garagem com 20 vagas", "/attachs e /cor", "Troca de roupa sem o item", "Tamanho da mochila mantido ao morrer", "Bônus de $500.000 no banco"]],
   ["Esmeralda", "VIP Esmeralda", 349.99, "vip_esmeralda.png", "Esmeralda", 15, 1200, 200000, ["30 dias", "Salário de R$ 1.200 por hora", "Garagem com 15 vagas", "/som dentro do veículo", "/attachs e /cor", "Troca de roupa sem o item", "Tamanho da mochila mantido ao morrer", "Bônus de $200.000 no banco"]],
   ["Patrocinador", "VIP Patrocinador", 499.99, "vip_patrocinador.png", "Patrocinador", 25, 2000, 750000, ["30 dias", "Salário de R$ 2.000 por hora", "Garagem com 25 vagas", "/som dentro do veículo", "/attachs e /cor", "/reparar", "Troca de roupa sem o item", "Tamanho da mochila mantido ao morrer", "Bônus de $750.000 no banco"]]
-].map(([id, name, price, image, group, slots, salary, bank, benefits]) => ({
+].map(([id, name, price, image, group, slots, salary, bank, benefits]) => draft({
   id: String(id),
   name: String(name),
-  category: "vips" as const,
+  category: "vips",
   price: Number(price),
   image: String(image),
   description: `${name} por 30 dias. Entra o grupo ${group}, salário de R$ ${Number(salary).toLocaleString("pt-BR")} por hora, garagem com ${slots} vagas e $${Number(bank).toLocaleString("pt-BR")} no banco na confirmação.`,
