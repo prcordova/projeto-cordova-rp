@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { DISCORD_INVITE, FIVEM_CONNECT, SERVER_IP } from "@/lib/connect";
+import { DISCORD_INVITE, FIVEM_CONNECT, FIVEM_JOIN } from "@/lib/connect";
 
 const cards = [
   { href: "/loja", title: "Loja", description: "VIPs, CRP, armas e mansões da vipshop. O pagamento no site entrega no passaporte.", image: "/imagens/loja.png" },
@@ -21,7 +21,7 @@ export default function HomePage() {
           Cordova RP roda no FiveM. A whitelist abre no Discord, a conexão entra direto no servidor e a loja deste site cobra no Mercado Pago. Quando o pagamento confirma, o produto cai no passaporte informado no carrinho.
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
-          <a href={FIVEM_CONNECT} className="rounded-xl bg-yellow-400 px-4 py-3 text-center font-bold text-black">Conectar {SERVER_IP}</a>
+          <a href={FIVEM_CONNECT} className="rounded-xl bg-yellow-400 px-4 py-3 text-center font-bold text-black">Conectar {FIVEM_JOIN}</a>
           <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className="rounded-xl border border-yellow-400 px-4 py-3 text-center font-bold text-yellow-400">Discord</a>
         </div>
       </section>

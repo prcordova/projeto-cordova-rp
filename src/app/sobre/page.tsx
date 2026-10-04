@@ -1,4 +1,4 @@
-import { DISCORD_INVITE, FIVEM_CONNECT, SERVER_IP } from "@/lib/connect";
+import { DISCORD_INVITE, FIVEM_CONNECT, FIVEM_JOIN } from "@/lib/connect";
 
 export default function SobrePage() {
   return (
@@ -7,10 +7,10 @@ export default function SobrePage() {
         <p className="text-sm font-bold tracking-widest text-yellow-400">CIDADE CORDOVA RP</p>
         <h1 className="mt-2 text-3xl font-extrabold">Sobre a cidade</h1>
         <p className="mt-3 max-w-3xl text-white/75">
-          Cordova RP é uma cidade de roleplay no FiveM, com economia, facções, empregos e loja. A entrada é pelo IP {SERVER_IP}. A whitelist é feita no Discord da cidade.
+          Cordova RP é uma cidade de roleplay no FiveM, com economia, facções, empregos e loja. A entrada é por {FIVEM_JOIN}. A whitelist é feita no Discord da cidade.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <a href={FIVEM_CONNECT} className="rounded-xl bg-yellow-400 px-4 py-3 font-bold text-black">Conectar {SERVER_IP}</a>
+          <a href={FIVEM_CONNECT} className="rounded-xl bg-yellow-400 px-4 py-3 font-bold text-black">Conectar {FIVEM_JOIN}</a>
           <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className="rounded-xl border border-yellow-400 px-4 py-3 font-bold text-yellow-400">Discord</a>
         </div>
       </section>
@@ -18,7 +18,7 @@ export default function SobrePage() {
       <section className="grid gap-4 md:grid-cols-2">
         <article className="rounded-2xl border border-yellow-400/30 bg-black p-5">
           <h2 className="text-xl font-bold">Como entrar</h2>
-          <p className="mt-2 text-white/75">Instale o FiveM, entre no Discord e peça a whitelist. O botão Conectar abre o jogo no servidor. Se o navegador não abrir o FiveM, aperte F8 e use <strong className="text-yellow-400">connect {SERVER_IP}</strong>.</p>
+          <p className="mt-2 text-white/75">Instale o FiveM, entre no Discord e peça a whitelist. O botão Conectar abre o jogo no servidor. Se o navegador não abrir o FiveM, aperte F8 e use <strong className="text-yellow-400">connect dq877j</strong>.</p>
         </article>
         <article className="rounded-2xl border border-yellow-400/30 bg-black p-5">
           <h2 className="text-xl font-bold">Dentro do jogo</h2>

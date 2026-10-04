@@ -10,7 +10,7 @@ export const news: NewsItem[] = [
     id: "conectar",
     title: "Como entrar na cidade",
     date: "30/09/2026",
-    body: "No FiveM, aperte F8 e digite connect 45.146.81.194. A whitelist é feita no Discord da cidade."
+    body: "Entre por cfx.re/join/dq877j. Se o navegador não abrir o FiveM, aperte F8 e digite connect dq877j. A whitelist é feita no Discord da cidade."
   },
   {
     id: "vip-wipe",
