@@ -1,6 +1,6 @@
 import { type ActionParams, type ShopAction } from "./actions";
 
-const IMG = "http://45.146.81.195/imagens";
+const IMG = "/imagens";
 
 export type ShopCategory = "vips" | "others" | "crp" | "vehicles" | "mansions" | "weapons";
 

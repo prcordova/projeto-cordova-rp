@@ -3,8 +3,8 @@ import { DISCORD_INVITE, FIVEM_CONNECT, SERVER_IP } from "@/lib/connect";
 
 const cards = [
   { href: "/loja", title: "Loja", description: "VIPs, CRP, veículos e mansões da vipshop. O pagamento no site entrega no passaporte.", image: "/imagens/loja.png" },
-  { href: "/sobre#organizacoes", title: "Organizações", description: "Facções, polícia, hospital e mecânica usam o painel aberto pelo menu ESC.", image: "/imagens/organizacoes.png" },
-  { href: "/noticias", title: "Ranking e avisos", description: "Notícias da cidade e o caminho para entrar no servidor.", image: "/imagens/ranking.png" },
+  { href: "/organizacoes", title: "Organizações", description: "Ranking das facções, o mesmo caixa que aparece no menu ESC.", image: "/imagens/organizacoes.png" },
+  { href: "/ranking", title: "Ranking", description: "Ricos, online, drift, PvP e corridas, como no jogo.", image: "/imagens/ranking.png" },
   { href: "/noticias", title: "Recompensa diária", description: "Entre todo dia e resgate a recompensa dentro do jogo.", image: "/imagens/recompensa.png" },
   { href: "/sobre", title: "Mapa", description: "Conecte na cidade e abra o mapa com M, ou pelo menu ESC.", image: "/imagens/mapa.png" },
   { href: "/suporte", title: "Suporte", description: "Dúvidas de conta e pagamento ficam no Discord. Chamados da cidade abrem no F5.", image: "/imagens/configuracoes.png" },

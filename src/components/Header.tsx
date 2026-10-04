@@ -29,6 +29,8 @@ export function Header() {
         <nav className="flex flex-wrap items-center gap-4 text-sm font-semibold">
           <Link href="/">Início</Link>
           <Link href="/loja">Loja</Link>
+          <Link href="/ranking">Ranking</Link>
+          <Link href="/organizacoes">Organizações</Link>
           <Link href="/noticias">Notícias</Link>
           {account?.admin ? <Link href="/admin" className="text-yellow-400">Painel</Link> : null}
           <span className="flex items-center gap-2">
