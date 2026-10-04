@@ -10,7 +10,6 @@ const tabs: { id: "all" | ShopCategory; label: string }[] = [
   { id: "mansions", label: "Mansões" },
   { id: "weapons", label: "Armas" },
   { id: "vips", label: "VIPs" },
-  { id: "vehicles", label: "Veículos" },
   { id: "others", label: "Outros" },
   { id: "crp", label: "CRP" }
 ];

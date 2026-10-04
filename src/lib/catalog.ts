@@ -80,55 +80,6 @@ const vipPlans: Product[] = [
   purchaseType: "monthly"
 }));
 
-const namedVehicles: Array<[string, string, number, number]> = [
-  ["skyr34", "Skyline R34", 1500, 500],
-  ["lamborghinihuracan", "Lamborghini Huracan", 1300, 500],
-  ["ferrarif12tdf", "Ferrari F12 TDF", 1300, 500],
-  ["mercedesamggtr", "Mercedes AMG GTR", 1300, 500],
-  ["bmwm8", "BMW M8", 1500, 500],
-  ["nissangtrnismo", "Nissan GTR Nismo", 1500, 500],
-  ["nissan370z", "Nissan 370Z", 1500, 500],
-  ["lancerevolutionx", "Lancer Evolution X", 900, 400]
-];
-
-const conceVehicles: Array<[string, string, number]> = [
-  ["tampa2", "Tampa2", 500],
-  ["autarch", "Autarch", 8600],
-  ["tyrus", "Tyrus", 4500],
-  ["rumpo", "Rumpo", 500],
-  ["entity2", "Entity XXR", 9400],
-  ["tezeract", "Tezeract", 11000],
-  ["le7b", "RE-7B", 7200],
-  ["camarozl1", "Chevrolet Camaro ZL1", 1500],
-  ["488", "Ferrari 488", 6800],
-  ["720s", "McLaren 720S", 9200],
-  ["lp670", "Lamborghini Murciélago", 4200],
-  ["ferrarif40", "Ferrari F40", 5500],
-  ["rallytruck", "Rally Truck", 4200],
-  ["blista", "Veloster", 1200],
-  ["bacalar", "Bentley Bacalar", 6200],
-  ["quadra", "Quadra", 4500],
-  ["918spyder", "Porsche 918 Spyder", 9800],
-  ["918spyder2", "Porsche 918 Spyder 2", 10400],
-  ["essenza", "Lamborghini Essenza", 11800],
-  ["sennagtr", "McLaren Senna GTR", 13200],
-  ["p1gtr", "McLaren P1 GTR", 14800],
-  ["mclarenp1", "McLaren P1", 15500],
-  ["sian", "Lamborghini Sián", 16200],
-  ["speedtail", "McLaren Speedtail", 17500],
-  ["bolide", "Bugatti Bolide", 19800],
-  ["jesko", "Koenigsegg Jesko", 23000],
-  ["shotaro", "Shotaro", 800],
-  ["golmarlboro", "Gol Marlboro", 500],
-  ["kuruma2", "Kuruma Blindado", 4500],
-  ["baller6", "Baller Blindado", 3200],
-  ["cognoscenti2", "Cognoscenti Blindado", 2800],
-  ["schafter5", "Schafter Blindado", 2600],
-  ["xls2", "XLS Blindado", 2400],
-  ["baller5", "Baller L", 1800],
-  ["cog552", "Cognoscenti 55", 1600]
-];
-
 const mansions: Array<[string, string, number, string, string]> = [
   ["mansao1", "Mansão Fazenda", 3500, "mansao_fazenda.png", "MansaoFazenda"],
   ["mansao3", "Mansão Olhar", 1500, "mansao_olhar.png", "MansaoOlhar"],
@@ -216,27 +167,6 @@ export const defaultProducts: Product[] = [
     image: "golden_deagle.png",
     description: "Desert Eagle dourada com 250 munições, entregue no inventário.",
     benefits: ["Arma no inventário", "250 munições", "800 CRP na cidade"]
-  }),
-  ...namedVehicles.map(([id, name, monthly, weekly]) => draft({
-    id,
-    name,
-    category: "vehicles",
-    crpPrice: monthly,
-    image: `${id}.png`,
-    description: `${name} na garagem. Aluguel mensal ${monthly} CRP ou semanal ${weekly} CRP. O permanente sai por três vezes o mensal.`,
-    benefits: [`Mensal: ${monthly} CRP`, `Semanal: ${weekly} CRP`, "Entrega na garagem"]
-  })),
-  ...conceVehicles.map(([id, name, permanent]) => {
-    const monthly = Math.max(1, Math.floor(permanent / 3));
-    return draft({
-      id,
-      name,
-      category: "vehicles",
-      crpPrice: permanent,
-      image: `${id}.png`,
-      description: `${name}, spawn ${id}. O permanente custa ${permanent} CRP, o mesmo valor da concessionária.`,
-      benefits: [`Permanente: ${permanent} CRP`, `Mensal: ${monthly} CRP`, "Blindagem aplicada na retirada da garagem"]
-    });
   }),
   ...mansions.map(([id, name, crp, image, group]) => draft({
     id,
