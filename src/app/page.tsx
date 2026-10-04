@@ -16,13 +16,13 @@ export default function HomePage() {
     <div className="space-y-8">
       <section className="rounded-2xl border border-yellow-400/40 bg-black p-6 sm:p-10">
         <p className="text-sm font-bold tracking-widest text-yellow-400">CIDADE CORDOVA RP</p>
-        <h1 className="mt-3 max-w-4xl text-4xl font-extrabold leading-tight sm:text-6xl">Uma cidade de roleplay, com economia, facções e vida própria.</h1>
+        <h1 className="mt-3 max-w-4xl text-3xl font-extrabold leading-tight sm:text-5xl lg:text-6xl">Uma cidade de roleplay, com economia, facções e vida própria.</h1>
         <p className="mt-5 max-w-3xl text-lg text-white/75">
           Cordova RP roda no FiveM. A whitelist abre no Discord, a conexão entra direto no servidor e a loja deste site cobra no Mercado Pago. Quando o pagamento confirma, o produto cai no passaporte informado no carrinho.
         </p>
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <a href={FIVEM_CONNECT} className="rounded-xl bg-yellow-400 px-4 py-3 font-bold text-black">Conectar {SERVER_IP}</a>
-          <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className="rounded-xl border border-yellow-400 px-4 py-3 font-bold text-yellow-400">Discord</a>
+        <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
+          <a href={FIVEM_CONNECT} className="rounded-xl bg-yellow-400 px-4 py-3 text-center font-bold text-black">Conectar {SERVER_IP}</a>
+          <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className="rounded-xl border border-yellow-400 px-4 py-3 text-center font-bold text-yellow-400">Discord</a>
         </div>
       </section>
       <section className="flex flex-col gap-4">

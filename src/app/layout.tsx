@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
-      <body className={`${montserrat.className} flex min-h-screen flex-col`}>
+      <body className={`${montserrat.className} flex min-h-screen flex-col overflow-x-clip`}>
         <AppToaster />
         <Header />
         <CartDrawer />

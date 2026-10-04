@@ -9,8 +9,8 @@ const reasons = [
 
 export default function EntrarPage() {
   return (
-    <section className="relative left-1/2 -mb-8 -mt-8 ml-[-50vw] grid min-h-[calc(100vh-5.5rem)] w-screen grid-rows-2 md:grid-cols-2 md:grid-rows-1">
-      <div className="relative min-h-64">
+    <section className="relative left-1/2 -mb-8 -mt-8 ml-[-50vw] grid w-screen max-w-[100vw] min-h-[calc(100dvh-4.5rem)] grid-rows-[minmax(12rem,42svh)_auto] md:grid-cols-2 md:grid-rows-1">
+      <div className="relative min-h-48">
         <img src="/imagens/organizacoes.png" alt="" className="absolute inset-0 h-full w-full object-cover" />
       </div>
       <div className="flex items-center justify-center bg-black px-6 py-10">

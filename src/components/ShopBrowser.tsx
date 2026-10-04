@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { ShopSelect } from "@/components/ShopSelect";
 import type { Product, ShopCategory } from "@/lib/catalog";
@@ -30,10 +30,24 @@ function itemPrice(product: Product) {
   return 0;
 }
 
-export function ShopBrowser({ products }: { products: Product[] }) {
+export function ShopBrowser({ initialProducts }: { initialProducts: Product[] }) {
+  const [products, setProducts] = useState(initialProducts);
   const [category, setCategory] = useState<(typeof tabs)[number]["id"]>("all");
   const [sort, setSort] = useState("bestsellers");
   const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    let cancel = false;
+    fetch("/api/store")
+      .then((response) => response.json())
+      .then((data) => {
+        if (!cancel && Array.isArray(data.items) && data.items.length) setProducts(data.items);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancel = true;
+    };
+  }, []);
 
   const visible = useMemo(() => {
     const term = query.trim().toLocaleLowerCase("pt-BR");
@@ -59,7 +73,7 @@ export function ShopBrowser({ products }: { products: Product[] }) {
 
   return (
     <div className="space-y-5">
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -71,8 +85,8 @@ export function ShopBrowser({ products }: { products: Product[] }) {
           </button>
         ))}
       </div>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <label className="min-w-64 flex-1 text-sm font-semibold">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <label className="w-full min-w-0 flex-1 text-sm font-semibold">
           Buscar
           <input
             value={query}
@@ -81,7 +95,7 @@ export function ShopBrowser({ products }: { products: Product[] }) {
             className="mt-1 w-full rounded-xl border border-yellow-400/40 bg-black px-3 py-2 font-normal"
           />
         </label>
-        <label className="text-sm font-semibold">
+        <label className="w-full text-sm font-semibold sm:w-auto">
           Ordenar por
           <div className="mt-1">
             <ShopSelect value={sort} options={sorts} onChange={setSort} />
@@ -89,7 +103,7 @@ export function ShopBrowser({ products }: { products: Product[] }) {
         </label>
       </div>
       {visible.length ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid items-stretch gap-4 md:grid-cols-2 lg:grid-cols-3">
           {visible.map((product) => <ProductCard key={product.id} product={product} />)}
         </div>
       ) : (

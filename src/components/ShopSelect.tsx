@@ -24,7 +24,7 @@ export function ShopSelect({
   }, []);
 
   return (
-    <div ref={root} className="relative min-w-52">
+    <div ref={root} className="relative w-full min-w-0 sm:min-w-52">
       <button
         type="button"
         className={`flex w-full items-center justify-between gap-3 rounded-xl border bg-[#1a1408] px-3 py-2 text-left text-sm font-bold ${open ? "border-yellow-400" : "border-yellow-400/50"}`}
