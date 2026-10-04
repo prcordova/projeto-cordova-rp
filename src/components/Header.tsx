@@ -7,18 +7,18 @@ import { useCart } from "@/store/cart";
 type Account = { name: string; avatar: string | null; admin: boolean };
 
 const links = [
-  { href: "/", label: "Início" },
   { href: "/loja", label: "Loja" },
   { href: "/ranking", label: "Ranking" },
   { href: "/organizacoes", label: "Organizações" },
   { href: "/noticias", label: "Notícias" }
 ];
 
+const itemClass = "block w-full rounded-lg px-3 py-2 text-left text-sm font-bold hover:bg-yellow-400 hover:text-black";
+
 export function Header() {
   const count = useCart((state) => state.lines.reduce((sum, line) => sum + line.qty, 0));
   const setOpen = useCart((state) => state.setOpen);
   const [account, setAccount] = useState<Account | null>(null);
-  const [menu, setMenu] = useState(false);
   const [accountMenu, setAccountMenu] = useState(false);
   const accountRoot = useRef<HTMLDivElement>(null);
 
@@ -50,11 +50,74 @@ export function Header() {
 
   return (
     <header className="border-b border-yellow-400/30 bg-black/80">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
-        <Link href="/" className="mr-auto text-lg font-extrabold tracking-wide text-yellow-400" onClick={() => setMenu(false)}>CORDOVA RP</Link>
-        <nav className="hidden items-center gap-4 text-sm font-semibold md:flex">
+      <div className="relative mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+        <Link href="/" className="shrink-0 text-lg font-extrabold tracking-wide text-yellow-400" aria-label="Início" onClick={() => setAccountMenu(false)}>CORDOVA RP</Link>
+        <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-5 text-sm font-semibold md:flex">
           {links.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
         </nav>
+        <div className="ml-auto flex items-center gap-3">
+        <div ref={accountRoot} className="relative">
+          {account ? (
+            <button
+              type="button"
+              className="flex items-center gap-2 text-sm font-semibold text-yellow-400"
+              aria-haspopup="menu"
+              aria-expanded={accountMenu}
+              aria-label="Abrir menu da conta"
+              onClick={() => setAccountMenu((open) => !open)}
+            >
+              <span className="hidden max-w-32 truncate md:inline">{account.name}</span>
+              {account.avatar ? (
+                <img src={account.avatar} alt="" className="h-8 w-8 rounded-full object-cover" />
+              ) : (
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-yellow-400 text-xs font-bold text-black">{account.name.slice(0, 1).toUpperCase()}</span>
+              )}
+            </button>
+          ) : (
+            <>
+              <Link href="/entrar" className="hidden text-sm font-semibold text-yellow-400 md:inline">Entrar</Link>
+              <button
+                type="button"
+                className="text-sm font-semibold text-yellow-400 md:hidden"
+                aria-haspopup="menu"
+                aria-expanded={accountMenu}
+                aria-label="Abrir menu"
+                onClick={() => setAccountMenu((open) => !open)}
+              >
+                Entrar
+              </button>
+            </>
+          )}
+          {accountMenu ? (
+            <ul className="absolute right-0 z-40 mt-2 min-w-44 rounded-xl border border-yellow-400/50 bg-[#141414] p-1 shadow-xl" role="menu">
+              {links.map((link) => (
+                <li key={link.href} className="md:hidden">
+                  <Link href={link.href} role="menuitem" className={itemClass} onClick={() => setAccountMenu(false)}>{link.label}</Link>
+                </li>
+              ))}
+              {account ? (
+                <>
+                  <li className="mx-2 my-1 border-t border-yellow-400/30 md:hidden" role="separator" />
+                  <li>
+                    <Link href="/conta" role="menuitem" className={itemClass} onClick={() => setAccountMenu(false)}>Conta</Link>
+                  </li>
+                  {account.admin ? (
+                    <li>
+                      <Link href="/admin" role="menuitem" className={itemClass} onClick={() => setAccountMenu(false)}>Painel</Link>
+                    </li>
+                  ) : null}
+                  <li>
+                    <button type="button" role="menuitem" className={itemClass} onClick={logout}>Sair</button>
+                  </li>
+                </>
+              ) : (
+                <li className="md:hidden">
+                  <Link href="/entrar" role="menuitem" className={itemClass} onClick={() => setAccountMenu(false)}>Entrar</Link>
+                </li>
+              )}
+            </ul>
+          ) : null}
+        </div>
         <button type="button" className="relative rounded-xl border border-yellow-400/50 p-2" aria-label="Abrir carrinho" onClick={() => setOpen(true)}>
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M6 6h15l-1.5 9h-12z" />
@@ -64,53 +127,8 @@ export function Header() {
           </svg>
           <span className="absolute -right-2 -top-2 grid h-5 min-w-5 place-items-center rounded-full bg-yellow-400 px-1 text-xs font-bold text-black">{count}</span>
         </button>
-        {account ? (
-          <div ref={accountRoot} className="relative">
-            <button
-              type="button"
-              className="flex items-center gap-2 text-sm font-semibold text-yellow-400"
-              aria-haspopup="menu"
-              aria-expanded={accountMenu}
-              aria-label="Abrir menu da conta"
-              onClick={() => setAccountMenu((open) => !open)}
-            >
-              {account.avatar ? (
-                <img src={account.avatar} alt="" className="h-8 w-8 rounded-full object-cover" />
-              ) : (
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-yellow-400 text-xs font-bold text-black">{account.name.slice(0, 1).toUpperCase()}</span>
-              )}
-              <span className="hidden max-w-32 truncate sm:inline">{account.name}</span>
-            </button>
-            {accountMenu ? (
-              <ul className="absolute right-0 z-40 mt-2 min-w-44 rounded-xl border border-yellow-400/50 bg-[#141414] p-1 shadow-xl" role="menu">
-                <li>
-                  <Link href="/conta" role="menuitem" className="block rounded-lg px-3 py-2 text-sm font-bold hover:bg-yellow-400 hover:text-black" onClick={() => setAccountMenu(false)}>Conta</Link>
-                </li>
-                {account.admin ? (
-                  <li>
-                    <Link href="/admin" role="menuitem" className="block rounded-lg px-3 py-2 text-sm font-bold hover:bg-yellow-400 hover:text-black" onClick={() => setAccountMenu(false)}>Painel</Link>
-                  </li>
-                ) : null}
-                <li>
-                  <button type="button" role="menuitem" className="w-full rounded-lg px-3 py-2 text-left text-sm font-bold hover:bg-yellow-400 hover:text-black" onClick={logout}>Sair</button>
-                </li>
-              </ul>
-            ) : null}
-          </div>
-        ) : (
-          <Link href="/entrar" className="text-sm font-semibold text-yellow-400" onClick={() => setMenu(false)}>Entrar</Link>
-        )}
-        <button type="button" className="rounded-xl border border-yellow-400/50 px-3 py-2 text-sm font-semibold md:hidden" aria-expanded={menu} onClick={() => setMenu((open) => !open)}>
-          {menu ? "Fechar" : "Menu"}
-        </button>
+        </div>
       </div>
-      {menu ? (
-        <nav className="flex flex-col gap-1 border-t border-yellow-400/20 px-4 py-3 text-sm font-semibold md:hidden">
-          {links.map((link) => (
-            <Link key={link.href} href={link.href} className="rounded-lg px-2 py-2" onClick={() => setMenu(false)}>{link.label}</Link>
-          ))}
-        </nav>
-      ) : null}
     </header>
   );
 }
