@@ -22,7 +22,7 @@ export default async function AdminPage() {
     <div className="space-y-4">
       <div>
         <h1 className="text-3xl font-extrabold">Painel da loja</h1>
-        <p className="max-w-3xl text-white/70">O que você cadastra entra no site e na vipshop. Se o banco não tiver produto nenhum, os dois lugares continuam com o config padrão.</p>
+        <p className="max-w-3xl text-white/70">A lista começa com o config da vipshop. Edite um item para a imagem, o nome, o texto e o preço passarem a valer no site e na cidade. O que não for salvo continua no config.</p>
       </div>
       <AdminPanel />
     </div>

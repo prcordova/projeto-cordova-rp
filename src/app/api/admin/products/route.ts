@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { actionByValue } from "@/lib/actions";
 import { getDb } from "@/lib/db";
-import { loadDbProducts } from "@/lib/catalog-server";
+import { loadCatalog } from "@/lib/catalog-server";
 import { readSession } from "@/lib/session";
 import { productSchema } from "@/lib/validators";
 
@@ -26,7 +26,7 @@ function paramsReady(action: string, params: { spawn?: string; item?: string; am
 export async function GET() {
   if (!await admin()) return NextResponse.json({ ok: false, message: "Sem acesso ao painel." }, { status: 403 });
   try {
-    const items = await loadDbProducts();
+    const items = await loadCatalog();
     return NextResponse.json({ ok: true, items });
   } catch {
     return NextResponse.json({ ok: false, message: "Não foi possível ler os produtos." }, { status: 500 });

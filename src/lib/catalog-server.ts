@@ -35,6 +35,14 @@ function fromDb(row: Record<string, unknown>): Product | null {
   };
 }
 
+export function absoluteImage(image: string, origin: string) {
+  const base = origin.replace(/\/$/, "");
+  if (/^https?:\/\//i.test(image)) return image;
+  if (!base) return image;
+  if (image.startsWith("/")) return `${base}${image}`;
+  return `${base}/imagens/${image.replace(/^\//, "")}`;
+}
+
 export async function loadDbProducts() {
   const db = await getDb();
   const rows = await db.collection("products").find({ active: { $ne: false } }).sort({ createdAt: 1 }).toArray();

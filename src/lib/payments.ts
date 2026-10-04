@@ -1,6 +1,9 @@
 import { ObjectId } from "mongodb";
 import { getDb } from "./db";
+import { defaultProducts } from "./catalog";
 import { findProduct } from "./catalog-server";
+
+const configIds = new Set(defaultProducts.map((item) => item.id));
 
 export function siteUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
@@ -42,8 +45,8 @@ export async function createCheckout(input: {
       amount: product.amount ?? product.actionParams?.amount,
       qty: item.qty,
       price: product.price,
-      action: product.source === "db" ? product.action : undefined,
-      actionParams: product.source === "db" ? product.actionParams : undefined
+      action: product.source === "db" && !configIds.has(product.id) ? product.action : undefined,
+      actionParams: product.source === "db" && !configIds.has(product.id) ? product.actionParams : undefined
     });
   }
   const total = Math.round(lines.reduce((sum, line) => sum + line.price * line.qty, 0) * 100) / 100;

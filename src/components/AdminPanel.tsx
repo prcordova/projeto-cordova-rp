@@ -9,6 +9,7 @@ const empty = {
   name: "",
   category: "others" as ShopCategory,
   price: "",
+  crpPrice: "",
   image: "",
   description: "",
   benefits: "",
@@ -24,6 +25,7 @@ const empty = {
 export function AdminPanel() {
   const [form, setForm] = useState(empty);
   const [items, setItems] = useState<Product[]>([]);
+  const [editing, setEditing] = useState<Product | null>(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const action = useMemo(() => actionByValue(form.action), [form.action]);
@@ -42,6 +44,29 @@ export function AdminPanel() {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
+  function edit(product: Product) {
+    const params = product.actionParams || {};
+    const image = product.image.startsWith("/") ? `${window.location.origin}${product.image}` : product.image;
+    setEditing(product);
+    setForm({
+      id: product.id,
+      name: product.name,
+      category: product.category,
+      price: product.price ? String(product.price) : "",
+      crpPrice: product.crpPrice ? String(product.crpPrice) : "",
+      image,
+      description: product.description,
+      benefits: product.benefits.join("\n"),
+      action: product.action || "grupo",
+      spawn: params.spawn || "",
+      item: params.item || "",
+      amount: params.amount ? String(params.amount) : product.amount ? String(product.amount) : "",
+      days: params.days ? String(params.days) : "",
+      group: params.group || "",
+      bank: params.bank ? String(params.bank) : ""
+    });
+  }
+
   async function save(event: FormEvent) {
     event.preventDefault();
     setLoading(true);
@@ -54,6 +79,7 @@ export function AdminPanel() {
         name: form.name,
         category: form.category,
         price: form.price === "" ? null : Number(form.price.replace(",", ".")),
+        crpPrice: form.crpPrice === "" ? null : Number(form.crpPrice.replace(",", ".")),
         image: form.image,
         description: form.description,
         benefits: form.benefits.split("\n").map((line) => line.trim()).filter(Boolean),
@@ -73,6 +99,7 @@ export function AdminPanel() {
     setMessage(data.message || "Não foi possível salvar.");
     if (data.ok) {
       setForm(empty);
+      setEditing(null);
       reload().catch(() => undefined);
     }
   }
@@ -101,10 +128,13 @@ export function AdminPanel() {
           </select>
         </label>
         <label className="block text-sm font-semibold">Preço em reais
-          <input value={form.price} onChange={(event) => set("price", event.target.value)} inputMode="decimal" placeholder="Deixe vazio para vender só na cidade" className="mt-1 w-full rounded-xl border border-white/15 bg-zinc-950 px-3 py-3 font-normal" />
+          <input value={form.price} onChange={(event) => set("price", event.target.value)} inputMode="decimal" placeholder="Vazio vende só com CRP na cidade" className="mt-1 w-full rounded-xl border border-white/15 bg-zinc-950 px-3 py-3 font-normal" />
+        </label>
+        <label className="block text-sm font-semibold">Preço em CRP
+          <input value={form.crpPrice} onChange={(event) => set("crpPrice", event.target.value)} inputMode="decimal" placeholder="Vazio quando o item é só em reais" className="mt-1 w-full rounded-xl border border-white/15 bg-zinc-950 px-3 py-3 font-normal" />
         </label>
         <label className="block text-sm font-semibold">Imagem
-          <input required type="url" value={form.image} onChange={(event) => set("image", event.target.value)} placeholder="https://..." className="mt-1 w-full rounded-xl border border-white/15 bg-zinc-950 px-3 py-3 font-normal" />
+          <input required value={form.image} onChange={(event) => set("image", event.target.value)} placeholder="https://... ou /imagens/arquivo.png" className="mt-1 w-full rounded-xl border border-white/15 bg-zinc-950 px-3 py-3 font-normal" />
         </label>
         <label className="block text-sm font-semibold">Descrição
           <textarea required value={form.description} onChange={(event) => set("description", event.target.value)} className="mt-1 min-h-24 w-full rounded-xl border border-white/15 bg-zinc-950 px-3 py-3 font-normal" />
@@ -124,18 +154,22 @@ export function AdminPanel() {
         {fields.includes("group") ? <input required value={form.group} onChange={(event) => set("group", event.target.value)} placeholder="Grupo, ex. Diamante ou MansaoFazenda" className="w-full rounded-xl border border-white/15 bg-zinc-950 px-3 py-3" /> : null}
         {fields.includes("days") ? <input required={form.action === "iniciaraluguelcarro"} value={form.days} onChange={(event) => set("days", event.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder="Dias. Vazio no grupo deixa sem prazo." className="w-full rounded-xl border border-white/15 bg-zinc-950 px-3 py-3" /> : null}
         {fields.includes("bank") ? <input value={form.bank} onChange={(event) => set("bank", event.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder="Bônus no banco, opcional" className="w-full rounded-xl border border-white/15 bg-zinc-950 px-3 py-3" /> : null}
-        <button disabled={loading} className="w-full rounded-xl bg-yellow-400 px-4 py-3 font-bold text-black">{loading ? "Salvando..." : "Cadastrar produto"}</button>
+        {editing?.source === "config" ? <p className="text-sm text-white/70">Este item ainda é o padrão do config. Salvar passa a imagem, o nome, o texto e o preço para a vipshop. A entrega na cidade continua a que esse item já tem.</p> : null}
+        <button disabled={loading} className="w-full rounded-xl bg-yellow-400 px-4 py-3 font-bold text-black">{loading ? "Salvando..." : editing ? "Salvar alterações" : "Cadastrar produto"}</button>
         {message ? <p className="text-sm text-yellow-100">{message}</p> : null}
       </form>
       <aside className="space-y-3">
-        <h2 className="text-lg font-bold">Cadastrados no banco</h2>
-        {items.length ? items.map((item) => (
+        <h2 className="text-lg font-bold">Produtos da loja</h2>
+        {items.map((item) => (
           <article key={item.id} className="rounded-2xl border border-yellow-400/30 bg-black p-4">
             <strong className="block">{item.name}</strong>
-            <p className="text-sm text-white/70">{item.id} · {item.action}</p>
-            <button type="button" className="mt-3 text-sm font-semibold text-yellow-400" onClick={() => remove(item.id)}>Retirar</button>
+            <p className="text-sm text-white/70">{item.id} · {item.source === "db" ? "Substituído no site" : "Padrão do config"}</p>
+            <div className="mt-3 flex gap-4">
+              <button type="button" className="text-sm font-semibold text-yellow-400" onClick={() => edit(item)}>Editar</button>
+              {item.source === "db" ? <button type="button" className="text-sm font-semibold text-yellow-400" onClick={() => remove(item.id)}>Voltar ao padrão</button> : null}
+            </div>
           </article>
-        )) : <p className="text-sm text-white/70">Nenhum produto no banco. A loja está usando o config da vipshop.</p>}
+        ))}
       </aside>
     </div>
   );

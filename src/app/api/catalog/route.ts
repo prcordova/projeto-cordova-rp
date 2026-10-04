@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { loadDbProducts } from "@/lib/catalog-server";
+import { absoluteImage, loadDbProducts } from "@/lib/catalog-server";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const origin = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
     const items = await loadDbProducts();
     if (!items.length) {
       return NextResponse.json({ source: "config", items: [] });
@@ -17,7 +18,7 @@ export async function GET() {
         category: item.category,
         description: item.description,
         detailedDescription: item.description,
-        image: item.image,
+        image: absoluteImage(item.image, origin),
         benefits: item.benefits,
         price: item.crpPrice || 0,
         crpprice: item.crpPrice || 0,

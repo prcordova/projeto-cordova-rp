@@ -41,6 +41,8 @@ type Draft = {
   benefits?: string[];
   purchaseType?: string;
   amount?: number;
+  action?: ShopAction;
+  actionParams?: ActionParams;
 };
 
 function draft(item: Draft): Product {
@@ -56,6 +58,8 @@ function draft(item: Draft): Product {
     benefits: item.benefits || [],
     purchaseType: item.purchaseType,
     amount: item.amount,
+    action: item.action,
+    actionParams: item.actionParams,
     sellOnline: typeof price === "number" && price > 0,
     source: "config"
   };
@@ -77,7 +81,9 @@ const vipPlans: Product[] = [
   image: String(image),
   description: `${name} por 30 dias. Entra o grupo ${group}, salário de R$ ${Number(salary).toLocaleString("pt-BR")} por hora, garagem com ${slots} vagas e $${Number(bank).toLocaleString("pt-BR")} no banco na confirmação.`,
   benefits: benefits as string[],
-  purchaseType: "monthly"
+  purchaseType: "monthly",
+  action: "iniciaraluguelvip",
+  actionParams: { group: String(group), days: 30, bank: Number(bank) }
 }));
 
 const mansions: Array<[string, string, number, string, string]> = [
@@ -112,12 +118,13 @@ export const defaultProducts: Product[] = [
       "Mochila, garagem de 12 vagas e /fixvip até o wipe",
       "Salário de R$ 600 por hora, Spotify e parkour por 30 dias",
       "R$ 1.000.000 no extrato VIP Wipe"
-    ]
+    ],
+    action: "vipwipe"
   }),
-  draft({ id: "crp_100", name: "100 CRP", category: "crp", price: 24.99, amount: 100, image: "promocao_especial.png", description: "Pacote inicial de Cordova Real Points. Pague com PIX ou cartão e o saldo cai na conta.", benefits: ["100 CRP na conta do passaporte"] }),
-  draft({ id: "crp_500", name: "500 CRP", category: "crp", price: 59.99, amount: 500, image: "promocao_especial.png", description: "Pacote intermediário de Cordova Real Points. Pague com PIX ou cartão e o saldo cai na conta.", benefits: ["500 CRP na conta do passaporte"] }),
-  draft({ id: "crp_1000", name: "1000 CRP", category: "crp", price: 99.99, amount: 1000, image: "promocao_especial.png", description: "Pacote maior de Cordova Real Points. Pague com PIX ou cartão e o saldo cai na conta.", benefits: ["1000 CRP na conta do passaporte"] }),
-  draft({ id: "crp_10000", name: "10000 CRP", category: "crp", price: 849.9, amount: 10000, image: "promocao_especial.png", description: "Pacote de 10.000 CRP. Dez pacotes de 1.000 sairiam R$ 899,00; aqui fica R$ 849,90.", benefits: ["10000 CRP na conta do passaporte"] }),
+  draft({ id: "crp_100", name: "100 CRP", category: "crp", price: 24.99, amount: 100, image: "promocao_especial.png", description: "Pacote inicial de Cordova Real Points. Pague com PIX ou cartão e o saldo cai na conta.", benefits: ["100 CRP na conta do passaporte"], action: "darcrp", actionParams: { amount: 100 } }),
+  draft({ id: "crp_500", name: "500 CRP", category: "crp", price: 59.99, amount: 500, image: "promocao_especial.png", description: "Pacote intermediário de Cordova Real Points. Pague com PIX ou cartão e o saldo cai na conta.", benefits: ["500 CRP na conta do passaporte"], action: "darcrp", actionParams: { amount: 500 } }),
+  draft({ id: "crp_1000", name: "1000 CRP", category: "crp", price: 99.99, amount: 1000, image: "promocao_especial.png", description: "Pacote maior de Cordova Real Points. Pague com PIX ou cartão e o saldo cai na conta.", benefits: ["1000 CRP na conta do passaporte"], action: "darcrp", actionParams: { amount: 1000 } }),
+  draft({ id: "crp_10000", name: "10000 CRP", category: "crp", price: 849.9, amount: 10000, image: "promocao_especial.png", description: "Pacote de 10.000 CRP. Dez pacotes de 1.000 sairiam R$ 899,00; aqui fica R$ 849,90.", benefits: ["10000 CRP na conta do passaporte"], action: "darcrp", actionParams: { amount: 10000 } }),
   draft({
     id: "Parkour",
     name: "Mobilidade Parkour",
@@ -127,7 +134,9 @@ export const defaultProducts: Product[] = [
     image: "parkour.png",
     purchaseType: "monthly",
     description: "Deslizada, salto e cambalhota por 30 dias. Com o parkour ativo, as manobras ficam liberadas sem comando.",
-    benefits: ["Parkour ativo por 30 dias", "Grupo Parkour", "Sem comando para usar as manobras"]
+    benefits: ["Parkour ativo por 30 dias", "Grupo Parkour", "Sem comando para usar as manobras"],
+    action: "grupo",
+    actionParams: { group: "Parkour", days: 30 }
   }),
   draft({
     id: "Spotify",
@@ -138,7 +147,9 @@ export const defaultProducts: Product[] = [
     image: "spotify.jpg",
     purchaseType: "monthly",
     description: "Som no veículo por 30 dias. Use /som dentro do carro.",
-    benefits: ["Acesso ao /som por 30 dias", "Grupo Spotify"]
+    benefits: ["Acesso ao /som por 30 dias", "Grupo Spotify"],
+    action: "grupo",
+    actionParams: { group: "Spotify", days: 30 }
   }),
   draft({
     id: "Cinema",
@@ -147,7 +158,9 @@ export const defaultProducts: Product[] = [
     crpPrice: 100,
     image: "cinema.png",
     description: "Grupo tv por 30 dias. Com o cinema privado, só quem tem o ingresso troca o vídeo, a pausa, a fila e o volume.",
-    benefits: ["Grupo tv por 30 dias", "Permissão cinema.permissao"]
+    benefits: ["Grupo tv por 30 dias", "Permissão cinema.permissao"],
+    action: "grupo",
+    actionParams: { group: "tv", days: 30 }
   }),
   draft({
     id: "ResetChar",
@@ -157,7 +170,8 @@ export const defaultProducts: Product[] = [
     crpPrice: 500,
     image: "https://svgsilh.com/svg/160895.svg",
     description: "Um crédito de /resetchar. Refaz rosto, cabelo e corpo. Nome, dinheiro, inventário e veículos continuam.",
-    benefits: ["1 uso de /resetchar", "Pode cancelar antes de confirmar", "Fica guardado até ser usado"]
+    benefits: ["1 uso de /resetchar", "Pode cancelar antes de confirmar", "Fica guardado até ser usado"],
+    action: "resetchar"
   }),
   draft({
     id: "weapon_golden_deagle",
@@ -166,7 +180,9 @@ export const defaultProducts: Product[] = [
     crpPrice: 800,
     image: "golden_deagle.png",
     description: "Desert Eagle dourada com 250 munições, entregue no inventário.",
-    benefits: ["Arma no inventário", "250 munições", "800 CRP na cidade"]
+    benefits: ["Arma no inventário", "250 munições", "800 CRP na cidade"],
+    action: "daritem",
+    actionParams: { item: "WEAPON_DEAGLE", amount: 1 }
   }),
   ...mansions.map(([id, name, crp, image, group]) => draft({
     id,
@@ -175,7 +191,9 @@ export const defaultProducts: Product[] = [
     crpPrice: crp,
     image,
     description: `${name} por 30 dias. O grupo ${group} entra na confirmação da compra na cidade.`,
-    benefits: [`${crp} CRP`, "Aluguel de 30 dias", `Grupo ${group}`]
+    benefits: [`${crp} CRP`, "Aluguel de 30 dias", `Grupo ${group}`],
+    action: "iniciaraluguelcasa",
+    actionParams: { group, days: 30 }
   }))
 ];
 
