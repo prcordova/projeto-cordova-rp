@@ -1,4 +1,4 @@
-import { FIVEM_CONNECT, SERVER_IP } from "@/lib/connect";
+import { DISCORD_INVITE, FIVEM_CONNECT, SERVER_IP } from "@/lib/connect";
 
 export default function SobrePage() {
   return (
@@ -9,7 +9,10 @@ export default function SobrePage() {
         <p className="mt-3 max-w-3xl text-white/75">
           Cordova RP é uma cidade de roleplay no FiveM, com economia, facções, empregos e loja. A entrada é pelo IP {SERVER_IP}. A whitelist é feita no Discord da cidade.
         </p>
-        <a href={FIVEM_CONNECT} className="mt-4 inline-block rounded-xl bg-yellow-400 px-4 py-3 font-bold text-black">Conectar {SERVER_IP}</a>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <a href={FIVEM_CONNECT} className="rounded-xl bg-yellow-400 px-4 py-3 font-bold text-black">Conectar {SERVER_IP}</a>
+          <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className="rounded-xl border border-yellow-400 px-4 py-3 font-bold text-yellow-400">Discord</a>
+        </div>
       </section>
 
       <section className="grid gap-4 md:grid-cols-2">
@@ -32,7 +35,7 @@ export default function SobrePage() {
           <img src="/imagens/loja.png" alt="" className="h-40 w-full object-cover" />
           <div className="p-5">
             <h2 className="text-xl font-bold">Economia e loja</h2>
-            <p className="mt-2 text-white/75">A loja deste site é a compra externa. O pagamento passa pelo Mercado Pago e o produto cai no ID informado no carrinho. VIP Wipe, parkour, Spotify e pacotes de CRP seguem as regras da cidade: carro, moto e mochila do Wipe ficam até o wipe; salário, Spotify e parkour duram 30 dias.</p>
+            <p className="mt-2 text-white/75">A loja deste site lista o catálogo da vipshop. O que tem preço em reais passa pelo Mercado Pago e cai no ID do carrinho. Veículos, mansões e armas em CRP continuam na loja de dentro da cidade. Sem produto cadastrado no banco, vale o config padrão.</p>
           </div>
         </article>
       </section>

@@ -14,6 +14,8 @@ type OrderLine = {
   amount?: number;
   qty: number;
   price: number;
+  action?: string;
+  actionParams?: Record<string, unknown>;
 };
 
 export async function createCheckout(input: {
@@ -30,16 +32,18 @@ export async function createCheckout(input: {
 
   const lines: OrderLine[] = [];
   for (const item of input.items) {
-    const product = findProduct(item.id);
-    if (!product) return { ok: false as const, message: "Item inválido." };
+    const product = await findProduct(item.id);
+    if (!product || !product.sellOnline || product.price === null) return { ok: false as const, message: "Item inválido." };
     lines.push({
       id: product.id,
       name: product.name,
       category: product.category,
       purchaseType: product.purchaseType,
-      amount: product.amount,
+      amount: product.amount ?? product.actionParams?.amount,
       qty: item.qty,
-      price: product.price
+      price: product.price,
+      action: product.source === "db" ? product.action : undefined,
+      actionParams: product.source === "db" ? product.actionParams : undefined
     });
   }
   const total = Math.round(lines.reduce((sum, line) => sum + line.price * line.qty, 0) * 100) / 100;
@@ -108,9 +112,12 @@ async function deliverToGame(order: { targetId: number; lines: OrderLine[] }, pa
   if (!url || !secret) return { ok: false, message: "Entrega no jogo ainda não configurada." };
   const expanded = order.lines.flatMap((line) => Array.from({ length: line.qty }, () => ({
     id: line.id,
+    name: line.name,
     category: line.category,
     purchaseType: line.purchaseType,
-    amount: line.amount
+    amount: line.amount,
+    action: line.action,
+    actionParams: line.actionParams
   })));
   const response = await fetch(url, {
     method: "POST",

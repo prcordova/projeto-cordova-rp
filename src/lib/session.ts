@@ -11,7 +11,21 @@ export type SessionUser = {
   name: string;
   avatar: string | null;
   emailVerified: boolean;
+  discordId: string | null;
+  admin: boolean;
 };
+
+export function adminDiscordIds() {
+  return (process.env.DISCORD_ADMIN_IDS || "")
+    .split(/[,\s]+/)
+    .map((id) => id.trim())
+    .filter(Boolean);
+}
+
+export function isAdminDiscord(discordId: string | null | undefined) {
+  if (!discordId) return false;
+  return adminDiscordIds().includes(discordId);
+}
 
 function secret() {
   const value = process.env.AUTH_SECRET;
@@ -54,12 +68,15 @@ export async function readSession(): Promise<SessionUser | null> {
     const db = await getDb();
     const user = await db.collection("users").findOne({ _id: new ObjectId(payload.sub) });
     if (!user || typeof user.email !== "string") return null;
+    const discordId = typeof user.discordId === "string" ? user.discordId : null;
     return {
       id: String(user._id),
       email: user.email,
       name: String(user.name || "Cidadão"),
       avatar: typeof user.avatar === "string" ? user.avatar : null,
-      emailVerified: Boolean(user.emailVerified)
+      emailVerified: Boolean(user.emailVerified),
+      discordId,
+      admin: isAdminDiscord(discordId)
     };
   } catch {
     return null;

@@ -13,6 +13,8 @@ export default async function ContaPage() {
       <h1 className="text-3xl font-extrabold">{user.name}</h1>
       <p>{user.email}</p>
       <p className="text-yellow-400">{user.emailVerified ? "E-mail confirmado." : "Confirme o e-mail para comprar."}</p>
+      {user.discordId ? <p className="text-sm text-white/70">Discord {user.discordId}</p> : null}
+      {user.admin ? <Link href="/admin" className="inline-block text-yellow-400">Abrir painel da loja</Link> : null}
       <form action="/api/auth/logout" method="post"><button className="rounded-xl border border-yellow-400 px-4 py-2">Sair</button></form>
     </div>
   );

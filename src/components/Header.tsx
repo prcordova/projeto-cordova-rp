@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { FIVEM_CONNECT } from "@/lib/connect";
+import { DISCORD_INVITE, FIVEM_CONNECT } from "@/lib/connect";
 import { useCart } from "@/store/cart";
 
-type Account = { name: string; avatar: string | null };
+type Account = { name: string; avatar: string | null; admin: boolean };
 
 export function Header() {
   const count = useCart((state) => state.lines.reduce((sum, line) => sum + line.qty, 0));
@@ -18,7 +18,7 @@ export function Header() {
         setAccount(null);
         return;
       }
-      setAccount({ name: data.user.name, avatar: data.user.avatar || null });
+      setAccount({ name: data.user.name, avatar: data.user.avatar || null, admin: Boolean(data.user.admin) });
     }).catch(() => setAccount(null));
   }, []);
 
@@ -30,7 +30,11 @@ export function Header() {
           <Link href="/">Início</Link>
           <Link href="/loja">Loja</Link>
           <Link href="/noticias">Notícias</Link>
-          <a href={FIVEM_CONNECT} className="rounded-xl bg-yellow-400 px-3 py-2 text-black">Conectar</a>
+          {account?.admin ? <Link href="/admin" className="text-yellow-400">Painel</Link> : null}
+          <span className="flex items-center gap-2">
+            <a href={FIVEM_CONNECT} className="rounded-xl bg-yellow-400 px-3 py-2 text-black">Conectar</a>
+            <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className="rounded-xl border border-yellow-400 px-3 py-2 text-yellow-400">Discord</a>
+          </span>
           <button type="button" className="relative rounded-xl border border-yellow-400/50 p-2" aria-label="Abrir carrinho" onClick={() => setOpen(true)}>
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M6 6h15l-1.5 9h-12z" />

@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { describeDbError, getDb } from "@/lib/db";
 import { setSession } from "@/lib/session";
 import { loginSchema } from "@/lib/validators";
 
@@ -16,7 +16,9 @@ export async function POST(request: Request) {
     }
     await setSession(String(user._id));
     return NextResponse.json({ ok: true, message: "Login feito." });
-  } catch {
-    return NextResponse.json({ ok: false, message: "Banco de dados ainda não configurado." }, { status: 500 });
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    if (reason.includes("MONGODB_URI")) return NextResponse.json({ ok: false, message: "Banco não configurado: falta MONGODB_URI na Vercel." }, { status: 500 });
+    return NextResponse.json({ ok: false, message: describeDbError(error) }, { status: 500 });
   }
 }

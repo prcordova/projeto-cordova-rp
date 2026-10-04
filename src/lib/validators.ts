@@ -24,6 +24,25 @@ export const tokenSchema = z.object({
   token: z.string().min(20)
 });
 
+export const productSchema = z.object({
+  id: z.string().trim().regex(/^[A-Za-z0-9_-]{2,40}$/, "ID só com letras, números, _ ou -."),
+  name: z.string().trim().min(2).max(80),
+  category: z.enum(["vips", "others", "crp", "vehicles", "mansions", "weapons"]),
+  price: z.number().min(0).max(100000).nullable(),
+  image: z.string().trim().url().max(400),
+  description: z.string().trim().min(4).max(800),
+  benefits: z.array(z.string().trim().min(1).max(160)).max(20),
+  action: z.enum(["spawn", "daritem", "iniciaraluguelcarro", "iniciaraluguelcasa", "iniciaraluguelvip", "vipwipe", "darcrp", "grupo", "resetchar"]),
+  actionParams: z.object({
+    spawn: z.string().trim().max(48).optional(),
+    item: z.string().trim().max(60).optional(),
+    amount: z.number().int().positive().max(1000000).optional(),
+    days: z.number().int().min(1).max(3650).nullable().optional(),
+    group: z.string().trim().max(48).optional(),
+    bank: z.number().int().min(0).max(100000000).optional()
+  })
+});
+
 export const checkoutSchema = z.object({
   targetId: z.number().int().positive(),
   items: z.array(z.object({

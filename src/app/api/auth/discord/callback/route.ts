@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getDb } from "@/lib/db";
+import { describeDbError, getDb } from "@/lib/db";
 import { siteUrl } from "@/lib/payments";
 import { setSession } from "@/lib/session";
 
@@ -68,7 +68,7 @@ export async function GET(request: Request) {
     console.error("discord callback", reason);
     if (reason.includes("MONGODB_URI")) return fail(base, "Banco não configurado: falta MONGODB_URI na Vercel.");
     if (reason.includes("AUTH_SECRET")) return fail(base, "Sessão não configurada: AUTH_SECRET falta ou tem menos de 16 caracteres.");
-    return fail(base, "Não foi possível conectar ao banco. Libere o acesso da Vercel no MongoDB Atlas.");
+    return fail(base, describeDbError(error));
   }
   return NextResponse.redirect(`${base}/conta`);
 }
