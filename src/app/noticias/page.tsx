@@ -12,7 +12,7 @@ export default async function NoticiasPage() {
         <p className="max-w-3xl text-white/70">Avisos da cidade. O texto longo rola dentro do card.</p>
       </div>
       {posts.length ? (
-        <div className="grid items-stretch gap-4 md:grid-cols-2">
+        <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
           {posts.map((post) => <PostCard key={post.id} post={post} />)}
         </div>
       ) : (

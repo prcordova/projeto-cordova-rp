@@ -24,6 +24,7 @@ export type RankEntry = {
   kind?: string;
   car?: string;
   sub?: string;
+  owner?: string;
 };
 
 export type RankPayload = Partial<Record<RankKey, RankEntry[]>>;

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { availabilityOptions, formatCrp, placeKinds, type Availability, type Product } from "@/lib/catalog";
+import type { RankEntry } from "@/lib/rankings";
 import { useCart } from "@/store/cart";
 
 const kinds = [
@@ -21,7 +22,12 @@ function statusLabel(product: Product) {
   return availabilityOptions.find((item) => item.id === product.availability)?.label || "À venda";
 }
 
-export function OrgBrowser() {
+function sameOrg(product: Product, name: string) {
+  const key = name.toLocaleLowerCase("pt-BR");
+  return product.id.toLocaleLowerCase("pt-BR") === key || product.name.toLocaleLowerCase("pt-BR") === key;
+}
+
+export function OrgBrowser({ factions }: { factions: RankEntry[] }) {
   const add = useCart((state) => state.add);
   const [products, setProducts] = useState<Product[]>([]);
   const [kind, setKind] = useState<(typeof kinds)[number]["id"]>("todas");
@@ -41,9 +47,39 @@ export function OrgBrowser() {
     };
   }, []);
 
+  const catalog = useMemo(() => {
+    const used = new Set<string>();
+    const fromGame = factions.flatMap((entry) => {
+      const name = entry.name || "";
+      if (!name) return [];
+      const overlay = products.find((item) => item.category === "organizacao" && (!item.placeKind || item.placeKind === "faccao") && sameOrg(item, name));
+      if (overlay) used.add(overlay.id);
+      const owner = entry.owner || entry.sub || "";
+      const product: Product = {
+        id: overlay?.id || name,
+        name: overlay?.name || name,
+        category: "organizacao",
+        price: overlay?.price ?? null,
+        crpPrice: overlay?.crpPrice ?? null,
+        image: overlay?.image || "/imagens/organizacoes.png",
+        description: overlay?.description || "Organização da cidade. A venda fecha quando alguém está como dono, líder, chefe ou diretor.",
+        benefits: overlay?.benefits || [],
+        placeKind: "faccao",
+        location: overlay?.location || "Na cidade",
+        availability: owner ? "dono" : overlay?.availability === "ocupada" || overlay?.availability === "dono" ? overlay.availability : "venda",
+        owner: owner || overlay?.owner,
+        sellOnline: Boolean(overlay?.sellOnline && !owner),
+        source: overlay?.source || "config"
+      };
+      return [product];
+    });
+    const rest = products.filter((item) => item.category === "organizacao" && !used.has(item.id) && !fromGame.some((org) => sameOrg(item, org.name)));
+    return [...fromGame, ...rest];
+  }, [products, factions]);
+
   const visible = useMemo(() => {
     const term = query.trim().toLocaleLowerCase("pt-BR");
-    return products.filter((product) => {
+    return catalog.filter((product) => {
       const blip = product.placeKind && product.placeKind !== "faccao";
       if (kind === "faccoes" && blip) return false;
       if (kind === "blips" && !blip) return false;
@@ -51,7 +87,7 @@ export function OrgBrowser() {
       if (!term) return true;
       return `${product.name} ${product.location || ""} ${product.owner || ""} ${product.description}`.toLocaleLowerCase("pt-BR").includes(term);
     });
-  }, [products, kind, status, query]);
+  }, [catalog, kind, status, query]);
 
   return (
     <div className="space-y-5">

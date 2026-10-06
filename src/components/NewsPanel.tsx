@@ -96,7 +96,7 @@ export function NewsPanel() {
         <button type="button" className="rounded-xl bg-yellow-400 px-4 py-3 font-bold text-black" onClick={startNew}>Nova notícia</button>
       </div>
       {message && !open ? <p className="text-sm text-yellow-100">{message}</p> : null}
-      <div className="grid items-stretch gap-4 md:grid-cols-2">
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
         {posts.map((post) => (
           <PostCard
             key={post.id}

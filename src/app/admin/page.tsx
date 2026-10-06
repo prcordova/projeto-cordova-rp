@@ -1,5 +1,4 @@
-import { AdminPanel } from "@/components/AdminPanel";
-import { NewsPanel } from "@/components/NewsPanel";
+import { AdminDesk } from "@/components/AdminDesk";
 import { can } from "@/lib/roles";
 import { readSession } from "@/lib/session";
 import Link from "next/link";
@@ -22,26 +21,5 @@ export default async function AdminPage() {
       </div>
     );
   }
-  return (
-    <div className="space-y-10">
-      {products ? (
-        <section className="space-y-4">
-          <div>
-            <h1 className="text-3xl font-extrabold">Painel da loja</h1>
-            <p className="max-w-3xl text-white/70">Os produtos aparecem como na loja. Nome, descrição e benefícios têm limite para caber no card. A imagem pode ser um link ou um arquivo enviado para a pasta pública.</p>
-          </div>
-          <AdminPanel />
-        </section>
-      ) : null}
-      {posts ? (
-        <section className="space-y-4">
-          <div>
-            <h2 className="text-3xl font-extrabold">Notícias</h2>
-            <p className="max-w-3xl text-white/70">Quem tem o cargo de publicar cria o post. Por enquanto esse cargo é o admin. Cada notícia só é editada pelo autor dela.</p>
-          </div>
-          <NewsPanel />
-        </section>
-      ) : null}
-    </div>
-  );
+  return <AdminDesk products={products} posts={posts} />;
 }
