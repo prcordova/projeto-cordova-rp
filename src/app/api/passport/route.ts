@@ -15,5 +15,11 @@ export async function GET(request: Request) {
   if (found.state !== "ok") {
     return NextResponse.json({ ok: true, exists: false, message: "Esse passaporte não existe na cidade." });
   }
-  return NextResponse.json({ ok: true, exists: true, userId: found.identity.userId, name: found.identity.name || `Passaporte ${found.identity.userId}` });
+  return NextResponse.json({
+    ok: true,
+    exists: true,
+    userId: found.identity.userId,
+    name: found.identity.name || `Passaporte ${found.identity.userId}`,
+    orgs: found.identity.orgs
+  });
 }

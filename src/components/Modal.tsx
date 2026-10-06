@@ -5,11 +5,13 @@ import { useEffect } from "react";
 export function Modal({
   title,
   onClose,
-  children
+  children,
+  wide = false
 }: {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
+  wide?: boolean;
 }) {
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -30,7 +32,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-yellow-400/45 bg-black p-5 shadow-2xl"
+        className={`max-h-[92vh] w-full overflow-y-auto rounded-2xl border border-yellow-400/45 bg-black p-5 shadow-2xl ${wide ? "max-w-3xl" : "max-w-xl"}`}
         onClick={(event) => event.stopPropagation()}
       >
         <header className="mb-4 flex items-center justify-between gap-3">

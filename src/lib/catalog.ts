@@ -221,7 +221,7 @@ export const defaultProducts: Product[] = [
   }))
 ];
 
-export const orgSalePrice = 1000;
+export const orgSalePrice = 299.99;
 
 export function offerDuration(product: Pick<Product, "category" | "purchaseType" | "action" | "actionParams" | "placeKind">) {
   if (product.placeKind === "faccao") return "Até o final da season";

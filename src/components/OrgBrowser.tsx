@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Modal } from "@/components/Modal";
 import { ProductCard } from "@/components/ProductCard";
 import { availabilityOptions, formatBrl, formatCrp, offerDuration, orgSalePrice, placeKinds, type Availability, type PlaceKind, type Product } from "@/lib/catalog";
+import { orgDossier } from "@/lib/org-details";
 import type { RankEntry } from "@/lib/rankings";
 import { useCart } from "@/store/cart";
 
@@ -38,6 +40,8 @@ export function OrgBrowser() {
   const [kind, setKind] = useState<(typeof kinds)[number]["id"]>("todas");
   const [status, setStatus] = useState<(typeof statuses)[number]["id"]>("todas");
   const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState<Product | null>(null);
+  const closeDetails = useCallback(() => setSelected(null), []);
 
   useEffect(() => {
     let cancel = false;
@@ -106,7 +110,7 @@ export function OrgBrowser() {
         price: orgSalePrice,
         crpPrice: null,
         image: overlay?.image || "/imagens/organizacoes.png",
-        description: "Venda única por R$ 1.000,00. O cargo de dono vale até o final da season.",
+        description: orgDossier(name)?.summary || "Venda única por R$ 299,99. O cargo de dono vale até o final da season.",
         benefits: ["Venda única", "Até o final da season"],
         placeKind: "faccao",
         location: overlay?.location || "Na cidade",
@@ -158,8 +162,9 @@ export function OrgBrowser() {
         <div className="grid items-stretch gap-4 md:grid-cols-2 lg:grid-cols-3">
           {visible.map((product) => {
             const availability = product.availability || "venda";
+            const dossier = product.placeKind === "faccao" ? orgDossier(product.id) || orgDossier(product.name) : undefined;
             const lines = product.placeKind === "faccao"
-              ? ["Venda única", "Até o final da season", product.location || "Na cidade"]
+              ? [dossier?.produces || "Venda única", "Até o final da season", product.location || "Na cidade"]
               : [product.location || "Sem localização", kindLabel(product), ...product.benefits].slice(0, 3);
             const shown = { ...product, benefits: lines };
             const note = "flex min-h-12 items-center justify-center rounded-xl border border-yellow-400/30 px-3 text-center text-sm font-semibold text-yellow-400";
@@ -173,7 +178,18 @@ export function OrgBrowser() {
                   type="button"
                   className="w-full rounded-xl border border-yellow-400 bg-black px-4 py-3 font-bold text-yellow-400 disabled:opacity-60"
                   disabled={inCart}
-                  onClick={() => add({ id: product.id, name: product.name, price: product.price || 0, image: product.image, description: product.description, duration: offerDuration(product) })}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    add({
+                      id: product.id,
+                      name: product.name,
+                      price: product.price || 0,
+                      image: product.image,
+                      description: product.description,
+                      duration: offerDuration(product),
+                      kind: product.placeKind && product.placeKind !== "faccao" ? "blip" : "org"
+                    });
+                  }}
                 >
                   {inCart ? "No carrinho" : `Comprar ${formatBrl(product.price)}`}
                 </button>
@@ -185,7 +201,13 @@ export function OrgBrowser() {
                 product={shown}
                 badge={statusLabel(product)}
                 priceLabel={product.placeKind === "faccao" ? formatBrl(orgSalePrice) : product.crpPrice ? formatCrp(product.crpPrice) : undefined}
-                footer={footer}
+                onToggle={() => setSelected(product)}
+                footer={
+                  <div className="space-y-2" onClick={(event) => event.stopPropagation()}>
+                    <button type="button" className="w-full rounded-xl border border-yellow-400/40 px-4 py-2 text-sm font-bold text-yellow-400" onClick={() => setSelected(product)}>Ver detalhes</button>
+                    {footer}
+                  </div>
+                }
               />
             );
           })}
@@ -193,6 +215,46 @@ export function OrgBrowser() {
       ) : ready && !rankDown ? (
         <p className="rounded-2xl border border-yellow-400/30 bg-black p-5 text-white/70">Nenhuma organização ou blip neste filtro. No painel, a categoria Organização publica o card aqui.</p>
       ) : null}
+      {selected ? <OrgDetails product={selected} onClose={closeDetails} /> : null}
     </div>
+  );
+}
+
+function OrgDetails({ product, onClose }: { product: Product; onClose: () => void }) {
+  const dossier = product.placeKind === "faccao" ? orgDossier(product.id) || orgDossier(product.name) : undefined;
+  const blocks = dossier
+    ? [
+        ["O que é", dossier.role],
+        ["O que faz", dossier.produces],
+        ["Drogas", dossier.drugs],
+        ["Armas", dossier.weapons],
+        ["Munição", dossier.ammo],
+        ["Cargos", dossier.ranks]
+      ]
+    : [["O que é", product.description]];
+  return (
+    <Modal title={product.name} onClose={onClose} wide>
+      <div className="space-y-4 text-sm leading-relaxed text-white/85">
+        <p className="font-bold text-yellow-400">{product.placeKind === "faccao" ? `${formatBrl(orgSalePrice)}. Venda única até o final da season.` : formatBrl(product.price || 0)}</p>
+        {blocks.map(([title, text]) => (
+          <section key={title}>
+            <h3 className="mb-1 font-extrabold text-yellow-400">{title}</h3>
+            <p>{text}</p>
+          </section>
+        ))}
+        {dossier ? (
+          <>
+            <section>
+              <h3 className="mb-1 font-extrabold text-yellow-400">O que vem na compra</h3>
+              <ul className="list-disc space-y-1 pl-5">{dossier.kit.map((line) => <li key={line}>{line}</li>)}</ul>
+            </section>
+            <section>
+              <h3 className="mb-1 font-extrabold text-yellow-400">Comandos</h3>
+              <ul className="list-disc space-y-1 pl-5">{dossier.commands.map((line) => <li key={line}>{line}</li>)}</ul>
+            </section>
+          </>
+        ) : null}
+      </div>
+    </Modal>
   );
 }

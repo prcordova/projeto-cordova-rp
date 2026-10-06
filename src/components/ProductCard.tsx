@@ -62,7 +62,7 @@ export function ProductCard({
       role={onToggle ? "button" : undefined}
       tabIndex={onToggle ? 0 : undefined}
       aria-expanded={onToggle ? expanded : undefined}
-      className={`relative flex min-w-0 flex-col rounded-2xl bg-[#1b1b1b] ${expanded ? "h-auto overflow-visible" : "h-[31rem] overflow-hidden"} ${accent === "alert" ? "border-2 border-red-500" : "border border-yellow-400/35"} ${onToggle ? "cursor-pointer" : ""} ${moving ? "z-10" : ""}`}
+      className={`relative flex min-w-0 flex-col rounded-2xl bg-[#1b1b1b] ${expanded ? "h-auto overflow-visible" : onToggle ? "h-[35rem] overflow-hidden" : "h-[31rem] overflow-hidden"} ${accent === "alert" ? "border-2 border-red-500" : "border border-yellow-400/35"} ${onToggle ? "cursor-pointer" : ""} ${moving ? "z-10" : ""}`}
       style={{ transform: tilt, transition: moving ? "none" : "transform 0.4s ease", transformStyle: "preserve-3d" }}
     >
       <header className="relative h-44 shrink-0">
