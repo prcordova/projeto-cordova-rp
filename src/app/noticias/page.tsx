@@ -1,23 +1,14 @@
-import { PostCard } from "@/components/PostCard";
-import { loadPosts } from "@/lib/posts";
+import { NewsFeed } from "@/components/NewsFeed";
+import { defaultPosts } from "@/lib/news";
 
-export const dynamic = "force-dynamic";
-
-export default async function NoticiasPage() {
-  const posts = await loadPosts();
+export default function NoticiasPage() {
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-extrabold">Notícias</h1>
         <p className="max-w-3xl text-white/70">Avisos da cidade. O texto longo rola dentro do card.</p>
       </div>
-      {posts.length ? (
-        <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
-          {posts.map((post) => <PostCard key={post.id} post={post} />)}
-        </div>
-      ) : (
-        <p className="rounded-2xl border border-yellow-400/30 bg-black p-5 text-white/70">Nenhuma notícia publicada.</p>
-      )}
+      <NewsFeed initial={defaultPosts} />
     </div>
   );
 }

@@ -1,9 +1,37 @@
-import { formatRankValue, rankBoards, type RankEntry, type RankKey, type RankPayload } from "@/lib/rankings";
+"use client";
+
+import { useEffect, useState } from "react";
+import { rankBoards, rankCells, rankColumns, type RankKey, type RankPayload } from "@/lib/rankings";
 
 const slots = 10;
 
-export function RankBoards({ payload, only }: { payload: RankPayload | null; only?: RankKey }) {
+export function RankBoards({ payload: given, only }: { payload?: RankPayload | null; only?: RankKey }) {
+  const [payload, setPayload] = useState<RankPayload | null | undefined>(given);
+  const [loading, setLoading] = useState(given === undefined);
+
+  useEffect(() => {
+    if (given !== undefined) return;
+    let cancel = false;
+    fetch("/api/rankings")
+      .then((response) => response.json())
+      .then((data) => {
+        if (!cancel) setPayload(data.payload || null);
+      })
+      .catch(() => {
+        if (!cancel) setPayload(null);
+      })
+      .finally(() => {
+        if (!cancel) setLoading(false);
+      });
+    return () => {
+      cancel = true;
+    };
+  }, [given]);
+
   const boards = only ? rankBoards.filter((board) => board.key === only) : rankBoards;
+  if (loading) {
+    return <p className="rounded-2xl border border-yellow-400/30 bg-black p-5 text-white/75">Carregando ranking...</p>;
+  }
   if (!payload) {
     return <p className="rounded-2xl border border-yellow-400/30 bg-black p-5 text-white/75">O ranking da cidade não respondeu. Ele é o mesmo do menu ESC e volta quando o servidor estiver no ar.</p>;
   }
@@ -11,30 +39,35 @@ export function RankBoards({ payload, only }: { payload: RankPayload | null; onl
     <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,350px),1fr))] items-stretch gap-4">
       {boards.map((board) => {
         const rows = payload[board.key] || [];
-        const full = board.key === "factions";
-        const count = full ? rows.length : slots;
+        const cols = rankColumns(board.key);
+        const count = board.key === "factions" ? Math.max(rows.length, 1) : slots;
+        const template = `2.25rem minmax(0,1fr) ${cols.map((col) => col.width).join(" ")}`;
         return (
           <article key={board.key} className="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-yellow-400/30 bg-black">
-            <header className="flex items-center justify-between gap-3 border-b border-yellow-400/20 px-3 py-2.5 sm:px-4 sm:py-3">
+            <header className="border-b border-yellow-400/20 px-3 py-2.5 sm:px-4 sm:py-3">
               <h2 className="min-w-0 truncate text-sm font-extrabold sm:text-base">{board.title}</h2>
-              <span className="shrink-0 text-xs text-yellow-400 sm:text-sm">Troféu</span>
             </header>
-            <ol className={`min-h-0 flex-1 ${full ? "max-h-80 overflow-x-hidden overflow-y-auto sm:max-h-[22.5rem]" : "grid grid-rows-10"}`}>
+            <div className="px-3 sm:px-4">
+              <div className="grid items-center gap-2 border-b border-yellow-400/20 py-2 text-[10px] font-extrabold uppercase tracking-wide text-yellow-400 sm:text-xs" style={{ gridTemplateColumns: template }}>
+                <span>#</span>
+                <span>Nome</span>
+                {cols.map((col) => <span key={col.label} className={col.text ? "truncate text-left" : "text-right"}>{col.label}</span>)}
+              </div>
+              <div className="max-h-80 overflow-x-hidden overflow-y-auto pb-2 [scrollbar-color:#facc15_#000] [scrollbar-width:thin] sm:max-h-[22.5rem] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-yellow-400 [&::-webkit-scrollbar-track]:bg-black">
               {Array.from({ length: count }, (_, index) => {
-                const entry: RankEntry | undefined = rows[index];
-                const extra = entry?.car || entry?.sub || entry?.owner;
+                const cells = rankCells(board.key, rows[index]);
                 return (
-                  <li key={`${board.key}-${index}`} className="grid h-8 shrink-0 grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-2 border-b border-white/10 px-3 text-xs last:border-b-0 sm:h-9 sm:grid-cols-[2.75rem_minmax(0,1fr)_auto] sm:gap-3 sm:px-4 sm:text-sm">
+                  <div key={`${board.key}-${index}`} className="grid h-8 items-center gap-2 border-b border-white/10 text-xs last:border-b-0 sm:h-9 sm:text-sm" style={{ gridTemplateColumns: template }}>
                     <span className={index < 3 ? "font-extrabold text-yellow-400" : "text-white/45"}>{index + 1}º</span>
-                    <span className="truncate font-semibold">{entry?.name || "—"}</span>
-                    <span className="max-w-[45%] truncate text-right text-white/75">
-                      {entry ? formatRankValue(entry) : "—"}
-                      {extra ? <span className="text-white/45"> · {extra}</span> : null}
-                    </span>
-                  </li>
+                    <span className="truncate font-semibold">{rows[index]?.name || "—"}</span>
+                    {cells.map((cell, cellIndex) => (
+                      <span key={`${board.key}-${index}-${cols[cellIndex].label}`} className={`min-w-0 truncate tabular-nums ${cols[cellIndex].text ? "text-left font-semibold text-white/80" : "text-right font-bold text-yellow-400"}`}>{cell}</span>
+                    ))}
+                  </div>
                 );
               })}
-            </ol>
+              </div>
+            </div>
           </article>
         );
       })}
