@@ -79,7 +79,10 @@ function asCategory(value: string): ShopCategory {
 
 export async function loadPurchases(userId: string): Promise<PurchaseView[]> {
   const db = await getDb();
-  const orders = await db.collection("orders").find({ userId }).sort({ createdAt: -1 }).limit(80).toArray();
+  const orders = await db.collection("orders").find({
+    userId,
+    status: { $in: ["delivered", "delivering", "conflict"] }
+  }).sort({ createdAt: -1 }).limit(80).toArray();
   const catalog = await loadCatalog();
   const byId = new Map(catalog.map((item) => [item.id.toLocaleLowerCase("pt-BR"), item]));
   const missing = new Set<number>();
