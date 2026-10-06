@@ -50,7 +50,10 @@ export async function POST(request: Request) {
       },
       { upsert: true }
     );
-    return NextResponse.json({ ok: true, message: "Produto salvo. A loja do site e a vipshop passam a usar este cadastro." });
+    const message = parsed.data.category === "organizacao"
+      ? "Cadastro salvo. Ele aparece em Organizações, fora da loja."
+      : "Produto salvo. A loja do site e a vipshop passam a usar este cadastro.";
+    return NextResponse.json({ ok: true, message });
   } catch {
     return NextResponse.json({ ok: false, message: "Não foi possível salvar o produto." }, { status: 500 });
   }

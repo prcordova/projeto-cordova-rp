@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { can } from "@/lib/roles";
 import { readSession } from "@/lib/session";
 
 export async function GET() {
@@ -8,7 +9,8 @@ export async function GET() {
     user: {
       name: user.name,
       avatar: user.avatar,
-      admin: user.admin
+      admin: user.admin,
+      posts: can(user, "posts")
     }
   });
 }

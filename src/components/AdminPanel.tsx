@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { actionByValue, shopActions, type ShopAction } from "@/lib/actions";
-import { categoryLabels, type Product, type ShopCategory } from "@/lib/catalog";
+import { availabilityOptions, categoryLabels, placeKinds, type Availability, type PlaceKind, type Product, type ShopCategory } from "@/lib/catalog";
 import { MenuDots } from "@/components/MenuDots";
 import { Modal } from "@/components/Modal";
 import { ProductCard } from "@/components/ProductCard";
@@ -22,7 +22,11 @@ const empty = {
   amount: "",
   days: "",
   group: "",
-  bank: ""
+  bank: "",
+  placeKind: "faccao" as PlaceKind,
+  location: "",
+  availability: "venda" as Availability,
+  owner: ""
 };
 
 export function AdminPanel() {
@@ -76,7 +80,11 @@ export function AdminPanel() {
       amount: params.amount ? String(params.amount) : product.amount ? String(product.amount) : "",
       days: params.days ? String(params.days) : "",
       group: params.group || "",
-      bank: params.bank ? String(params.bank) : ""
+      bank: params.bank ? String(params.bank) : "",
+      placeKind: product.placeKind || "faccao",
+      location: product.location || "",
+      availability: product.availability || "venda",
+      owner: product.owner || ""
     });
     setOpen(true);
   }
@@ -120,7 +128,11 @@ export function AdminPanel() {
           days: form.days ? Number(form.days) : null,
           group: form.group || undefined,
           bank: form.bank ? Number(form.bank) : undefined
-        }
+        },
+        placeKind: form.category === "organizacao" ? form.placeKind : undefined,
+        location: form.category === "organizacao" ? form.location : undefined,
+        availability: form.category === "organizacao" ? form.availability : undefined,
+        owner: form.category === "organizacao" && form.availability === "dono" ? form.owner : undefined
       })
     });
     const data = await response.json();
@@ -183,13 +195,40 @@ export function AdminPanel() {
               <input required value={form.id} onChange={(event) => set("id", event.target.value)} placeholder="vip_natal" className={input} readOnly={Boolean(editing)} />
             </label>
             <label className="block text-sm font-semibold">Nome
-              <input required value={form.name} onChange={(event) => set("name", event.target.value)} className={input} />
+              <input required maxLength={40} value={form.name} onChange={(event) => set("name", event.target.value)} placeholder="Até 40 caracteres" className={input} />
             </label>
             <label className="block text-sm font-semibold">Categoria
-              <select value={form.category} onChange={(event) => set("category", event.target.value as ShopCategory)} className={`${input} border-yellow-400/50`}>
+              <select value={form.category} onChange={(event) => {
+                const category = event.target.value as ShopCategory;
+                set("category", category);
+                if (category === "organizacao" && form.action === "darcrp") set("action", "grupo");
+              }} className={`${input} border-yellow-400/50`}>
                 {Object.entries(categoryLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
               </select>
             </label>
+            {form.category === "organizacao" ? (
+              <>
+                <p className="text-sm text-white/70">Este cadastro aparece na página Organizações, fora da loja. Vale para facção e para blip de garagem, cabeleireiro, AFK ou PVP.</p>
+                <label className="block text-sm font-semibold">Tipo
+                  <select value={form.placeKind} onChange={(event) => set("placeKind", event.target.value as PlaceKind)} className={`${input} border-yellow-400/50`}>
+                    {placeKinds.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
+                  </select>
+                </label>
+                <label className="block text-sm font-semibold">Localização
+                  <input required value={form.location} onChange={(event) => set("location", event.target.value)} placeholder="Ex.: Sandy Shores, ao lado do posto" className={input} />
+                </label>
+                <label className="block text-sm font-semibold">Situação
+                  <select value={form.availability} onChange={(event) => set("availability", event.target.value as Availability)} className={`${input} border-yellow-400/50`}>
+                    {availabilityOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
+                  </select>
+                </label>
+                {form.availability === "dono" ? (
+                  <label className="block text-sm font-semibold">Dono
+                    <input required value={form.owner} onChange={(event) => set("owner", event.target.value)} placeholder="Nome de quem já comprou" className={input} />
+                  </label>
+                ) : null}
+              </>
+            ) : null}
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="block text-sm font-semibold">Preço em reais
                 <input value={form.price} onChange={(event) => set("price", event.target.value)} inputMode="decimal" placeholder="Vazio vende só com CRP" className={input} />
@@ -217,10 +256,10 @@ export function AdminPanel() {
               {form.image ? <img src={form.image} alt="" className="h-28 w-full rounded-xl bg-zinc-950 object-contain" /> : null}
             </div>
             <label className="block text-sm font-semibold">Descrição
-              <textarea required value={form.description} onChange={(event) => set("description", event.target.value)} className={`${input} min-h-24`} />
+              <textarea required maxLength={160} value={form.description} onChange={(event) => set("description", event.target.value)} placeholder="Até 160 caracteres, em até 3 linhas no card" className={`${input} min-h-24`} />
             </label>
             <label className="block text-sm font-semibold">Benefícios, um por linha
-              <textarea value={form.benefits} onChange={(event) => set("benefits", event.target.value)} className={`${input} min-h-24`} />
+              <textarea value={form.benefits} onChange={(event) => set("benefits", event.target.value)} placeholder="Até 6 linhas, 48 caracteres cada. O card mostra 3." className={`${input} min-h-24`} />
             </label>
             <label className="block text-sm font-semibold">O que a venda confirmada faz
               <select value={form.action} onChange={(event) => set("action", event.target.value as ShopAction)} className={`${input} border-yellow-400/50 text-yellow-100`}>

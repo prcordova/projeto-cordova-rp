@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
+import { can } from "@/lib/roles";
 import { readSession } from "@/lib/session";
 
 export const runtime = "nodejs";
@@ -14,7 +15,7 @@ const types: Record<string, string> = {
 
 export async function POST(request: Request) {
   const user = await readSession();
-  if (!user?.admin) return NextResponse.json({ ok: false, message: "Sem acesso ao painel." }, { status: 403 });
+  if (!can(user, "products") && !can(user, "posts")) return NextResponse.json({ ok: false, message: "Sem acesso ao painel." }, { status: 403 });
   const form = await request.formData().catch(() => null);
   const file = form?.get("file");
   if (!(file instanceof File)) return NextResponse.json({ ok: false, message: "Envie uma imagem." }, { status: 400 });

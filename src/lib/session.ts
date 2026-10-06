@@ -13,6 +13,7 @@ export type SessionUser = {
   emailVerified: boolean;
   discordId: string | null;
   admin: boolean;
+  roles: string[];
 };
 
 export function adminDiscordIds() {
@@ -76,7 +77,8 @@ export async function readSession(): Promise<SessionUser | null> {
       avatar: typeof user.avatar === "string" ? user.avatar : null,
       emailVerified: Boolean(user.emailVerified),
       discordId,
-      admin: isAdminDiscord(discordId)
+      admin: isAdminDiscord(discordId),
+      roles: Array.isArray(user.roles) ? user.roles.filter((role): role is string => typeof role === "string") : []
     };
   } catch {
     return null;

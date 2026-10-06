@@ -52,6 +52,7 @@ export function ShopBrowser({ initialProducts }: { initialProducts: Product[] })
   const visible = useMemo(() => {
     const term = query.trim().toLocaleLowerCase("pt-BR");
     const list = products.filter((product) => {
+      if (product.category === "organizacao") return false;
       if (category !== "all" && product.category !== category) return false;
       if (!term) return true;
       return `${product.name} ${product.description}`.toLocaleLowerCase("pt-BR").includes(term);

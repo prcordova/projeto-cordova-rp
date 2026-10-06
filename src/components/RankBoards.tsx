@@ -1,4 +1,6 @@
-import { formatRankValue, rankBoards, type RankKey, type RankPayload } from "@/lib/rankings";
+import { formatRankValue, rankBoards, type RankEntry, type RankKey, type RankPayload } from "@/lib/rankings";
+
+const slots = 10;
 
 export function RankBoards({ payload, only }: { payload: RankPayload | null; only?: RankKey }) {
   const boards = only ? rankBoards.filter((board) => board.key === only) : rankBoards;
@@ -6,31 +8,31 @@ export function RankBoards({ payload, only }: { payload: RankPayload | null; onl
     return <p className="rounded-2xl border border-yellow-400/30 bg-black p-5 text-white/75">O ranking da cidade não respondeu. Ele é o mesmo do menu ESC e volta quando o servidor estiver no ar.</p>;
   }
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,350px),1fr))] items-stretch gap-4">
       {boards.map((board) => {
         const rows = payload[board.key] || [];
         return (
-          <article key={board.key} className="overflow-hidden rounded-2xl border border-yellow-400/30 bg-black">
-            <header className="flex items-center justify-between border-b border-yellow-400/20 px-4 py-3">
-              <h2 className="text-lg font-extrabold">{board.title}</h2>
-              <span className="text-yellow-400">Troféu</span>
+          <article key={board.key} className="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-yellow-400/30 bg-black">
+            <header className="flex items-center justify-between gap-3 border-b border-yellow-400/20 px-3 py-2.5 sm:px-4 sm:py-3">
+              <h2 className="min-w-0 truncate text-sm font-extrabold sm:text-base">{board.title}</h2>
+              <span className="shrink-0 text-xs text-yellow-400 sm:text-sm">Troféu</span>
             </header>
-            {rows.length ? (
-              <ol className="divide-y divide-white/10">
-                {rows.slice(0, 10).map((entry, index) => (
-                  <li key={`${board.key}-${index}`} className="grid grid-cols-[4.5rem_minmax(0,1fr)_auto] items-center gap-3 px-4 py-2 text-sm">
-                    <span className={index < 3 ? "font-extrabold text-yellow-400" : "text-white/60"}>{index + 1}º</span>
-                    <span className="truncate font-semibold">{entry.name || "—"}</span>
-                    <span className="text-right text-white/80">
-                      {formatRankValue(entry)}
-                      {entry.car || entry.sub ? <span className="mt-0.5 block text-xs text-white/50">{entry.car || entry.sub}</span> : null}
+            <ol className="grid flex-1 grid-rows-10">
+              {Array.from({ length: slots }, (_, index) => {
+                const entry: RankEntry | undefined = rows[index];
+                const extra = entry?.car || entry?.sub;
+                return (
+                  <li key={`${board.key}-${index}`} className="grid h-8 grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-2 border-b border-white/10 px-3 text-xs last:border-b-0 sm:h-9 sm:grid-cols-[2.75rem_minmax(0,1fr)_auto] sm:gap-3 sm:px-4 sm:text-sm">
+                    <span className={index < 3 ? "font-extrabold text-yellow-400" : "text-white/45"}>{index + 1}º</span>
+                    <span className="truncate font-semibold">{entry?.name || "—"}</span>
+                    <span className="max-w-[45%] truncate text-right text-white/75">
+                      {entry ? formatRankValue(entry) : "—"}
+                      {extra ? <span className="text-white/45"> · {extra}</span> : null}
                     </span>
                   </li>
-                ))}
-              </ol>
-            ) : (
-              <p className="px-4 py-6 text-sm text-white/60">Sem dados</p>
-            )}
+                );
+              })}
+            </ol>
           </article>
         );
       })}

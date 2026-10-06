@@ -3,7 +3,7 @@ import { DISCORD_INVITE, FIVEM_CONNECT, FIVEM_JOIN } from "@/lib/connect";
 
 const cards = [
   { href: "/loja", title: "Loja", description: "VIPs, CRP, armas e mansões da vipshop. O pagamento no site entrega no passaporte.", image: "/imagens/loja.png" },
-  { href: "/organizacoes", title: "Organizações", description: "Ranking das facções, o mesmo caixa que aparece no menu ESC.", image: "/imagens/organizacoes.png" },
+  { href: "/organizacoes", title: "Organizações", description: "Facções e blips à venda, com dono ou ocupados. O caixa das facções fica no ranking.", image: "/imagens/organizacoes.png" },
   { href: "/ranking", title: "Ranking", description: "Ricos, online, drift, PvP e corridas, como no jogo.", image: "/imagens/ranking.png" },
   { href: "/noticias", title: "Recompensa diária", description: "Entre todo dia e resgate a recompensa dentro do jogo.", image: "/imagens/recompensa.png" },
   { href: "/sobre", title: "Mapa", description: "Conecte na cidade e abra o mapa com M, ou pelo menu ESC.", image: "/imagens/mapa.png" },

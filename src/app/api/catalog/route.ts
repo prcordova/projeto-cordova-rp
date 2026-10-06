@@ -28,7 +28,11 @@ export async function GET(request: Request) {
         amount: item.amount ?? item.actionParams?.amount,
         action: item.action,
         actionParams: item.actionParams || {},
-        purchaseType: item.purchaseType
+        purchaseType: item.purchaseType,
+        placeKind: item.placeKind,
+        location: item.location,
+        availability: item.availability,
+        owner: item.owner
       }))
     });
   } catch {

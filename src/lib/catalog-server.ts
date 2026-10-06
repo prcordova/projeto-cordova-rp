@@ -1,5 +1,5 @@
 import { type ActionParams, type ShopAction } from "./actions";
-import { defaultProducts, type Product, type ShopCategory } from "./catalog";
+import { defaultProducts, type Availability, type PlaceKind, type Product, type ShopCategory } from "./catalog";
 import { getDb } from "./db";
 
 const fallbackImage = "http://45.146.81.195/imagens/default.png";
@@ -14,7 +14,9 @@ function fromDb(row: Record<string, unknown>): Product | null {
   const name = typeof row.name === "string" ? row.name : "";
   const category = row.category;
   if (!id || !name || typeof category !== "string") return null;
-  if (!["vips", "others", "crp", "vehicles", "mansions", "weapons"].includes(category)) return null;
+  if (!["vips", "others", "crp", "vehicles", "mansions", "weapons", "organizacao"].includes(category)) return null;
+  const placeKind = row.placeKind;
+  const availability = row.availability;
   const price = asNumber(row.price);
   const params = row.actionParams && typeof row.actionParams === "object" ? row.actionParams as ActionParams : undefined;
   return {
@@ -30,6 +32,10 @@ function fromDb(row: Record<string, unknown>): Product | null {
     amount: asNumber(row.amount) ?? (params ? asNumber((params as { amount?: unknown }).amount) : null) ?? undefined,
     action: typeof row.action === "string" ? row.action as ShopAction : undefined,
     actionParams: params,
+    placeKind: placeKind === "faccao" || placeKind === "garagem" || placeKind === "cabeleireiro" || placeKind === "afk" || placeKind === "pvp" || placeKind === "outro" ? placeKind as PlaceKind : undefined,
+    location: typeof row.location === "string" ? row.location : undefined,
+    availability: availability === "venda" || availability === "dono" || availability === "ocupada" ? availability as Availability : undefined,
+    owner: typeof row.owner === "string" ? row.owner : undefined,
     sellOnline: price !== null && price > 0,
     source: "db"
   };

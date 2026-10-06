@@ -2,7 +2,26 @@ import { type ActionParams, type ShopAction } from "./actions";
 
 const IMG = "/imagens";
 
-export type ShopCategory = "vips" | "others" | "crp" | "vehicles" | "mansions" | "weapons";
+export type ShopCategory = "vips" | "others" | "crp" | "vehicles" | "mansions" | "weapons" | "organizacao";
+
+export const placeKinds = [
+  { id: "faccao", label: "Organização" },
+  { id: "garagem", label: "Blip de garagem" },
+  { id: "cabeleireiro", label: "Blip cabeleireiro" },
+  { id: "afk", label: "Blip AFK" },
+  { id: "pvp", label: "Blip PVP" },
+  { id: "outro", label: "Outro blip" }
+] as const;
+
+export type PlaceKind = (typeof placeKinds)[number]["id"];
+
+export const availabilityOptions = [
+  { id: "venda", label: "À venda" },
+  { id: "dono", label: "Com dono" },
+  { id: "ocupada", label: "Ocupada" }
+] as const;
+
+export type Availability = (typeof availabilityOptions)[number]["id"];
 
 export type Product = {
   id: string;
@@ -17,6 +36,10 @@ export type Product = {
   amount?: number;
   action?: ShopAction;
   actionParams?: ActionParams;
+  placeKind?: PlaceKind;
+  location?: string;
+  availability?: Availability;
+  owner?: string;
   sellOnline: boolean;
   source: "config" | "db";
 };
@@ -27,7 +50,8 @@ export const categoryLabels: Record<ShopCategory, string> = {
   others: "Outros",
   vehicles: "Veículos",
   mansions: "Mansões",
-  weapons: "Armas"
+  weapons: "Armas",
+  organizacao: "Organização"
 };
 
 type Draft = {

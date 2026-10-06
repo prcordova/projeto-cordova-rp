@@ -1,19 +1,14 @@
 import Link from "next/link";
-import { RankBoards } from "@/components/RankBoards";
-import { loadRankings } from "@/lib/rankings";
+import { OrgBrowser } from "@/components/OrgBrowser";
 
-export const dynamic = "force-dynamic";
-
-export default async function OrganizacoesPage() {
-  const payload = await loadRankings();
+export default function OrganizacoesPage() {
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-extrabold">Organizações</h1>
-        <p className="max-w-3xl text-white/70">O ranking das facções é o mesmo do menu ESC: o caixa de cada organização, do maior para o menor. O painel da sua facção continua abrindo dentro da cidade.</p>
+        <p className="max-w-3xl text-white/70">Facções e blips da cidade, no mesmo card da loja. Cada um mostra a localização, se está à venda em CRP, se já tem dono ou se está ocupado. O caixa das facções continua no <Link href="/ranking" className="text-yellow-400">ranking</Link>.</p>
       </div>
-      <RankBoards payload={payload} only="factions" />
-      <p className="text-sm text-white/60">Os outros quadros estão na página de <Link href="/ranking" className="text-yellow-400">ranking</Link>.</p>
+      <OrgBrowser />
     </div>
   );
 }

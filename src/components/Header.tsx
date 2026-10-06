@@ -4,13 +4,13 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/store/cart";
 
-type Account = { name: string; avatar: string | null; admin: boolean };
+type Account = { name: string; avatar: string | null; admin: boolean; posts: boolean };
 
 const links = [
+  { href: "/noticias", label: "Notícias" },
   { href: "/loja", label: "Loja" },
-  { href: "/ranking", label: "Ranking" },
   { href: "/organizacoes", label: "Organizações" },
-  { href: "/noticias", label: "Notícias" }
+  { href: "/ranking", label: "Ranking" }
 ];
 
 const itemClass = "block w-full rounded-lg px-3 py-2 text-left text-sm font-bold hover:bg-yellow-400 hover:text-black";
@@ -28,7 +28,7 @@ export function Header() {
         setAccount(null);
         return;
       }
-      setAccount({ name: data.user.name, avatar: data.user.avatar || null, admin: Boolean(data.user.admin) });
+      setAccount({ name: data.user.name, avatar: data.user.avatar || null, admin: Boolean(data.user.admin), posts: Boolean(data.user.posts) });
     }).catch(() => setAccount(null));
   }, []);
 
@@ -56,6 +56,15 @@ export function Header() {
           {links.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
         </nav>
         <div className="ml-auto flex items-center gap-3">
+        <button type="button" className="relative rounded-xl border border-yellow-400/50 p-2" aria-label="Abrir carrinho" onClick={() => setOpen(true)}>
+          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M6 6h15l-1.5 9h-12z" />
+            <path d="M6 6 5 3H2" />
+            <circle cx="9" cy="20" r="1" />
+            <circle cx="18" cy="20" r="1" />
+          </svg>
+          <span className="absolute -right-2 -top-2 grid h-5 min-w-5 place-items-center rounded-full bg-yellow-400 px-1 text-xs font-bold text-black">{count}</span>
+        </button>
         <div ref={accountRoot} className="relative">
           {account ? (
             <button
@@ -101,7 +110,7 @@ export function Header() {
                   <li>
                     <Link href="/conta" role="menuitem" className={itemClass} onClick={() => setAccountMenu(false)}>Conta</Link>
                   </li>
-                  {account.admin ? (
+                  {account.admin || account.posts ? (
                     <li>
                       <Link href="/admin" role="menuitem" className={itemClass} onClick={() => setAccountMenu(false)}>Painel</Link>
                     </li>
@@ -118,15 +127,6 @@ export function Header() {
             </ul>
           ) : null}
         </div>
-        <button type="button" className="relative rounded-xl border border-yellow-400/50 p-2" aria-label="Abrir carrinho" onClick={() => setOpen(true)}>
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M6 6h15l-1.5 9h-12z" />
-            <path d="M6 6 5 3H2" />
-            <circle cx="9" cy="20" r="1" />
-            <circle cx="18" cy="20" r="1" />
-          </svg>
-          <span className="absolute -right-2 -top-2 grid h-5 min-w-5 place-items-center rounded-full bg-yellow-400 px-1 text-xs font-bold text-black">{count}</span>
-        </button>
         </div>
       </div>
     </header>
