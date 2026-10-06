@@ -21,7 +21,7 @@ export function PostCard({ post, menu }: { post: FeedPost; menu?: ReactNode }) {
           {post.body}
         </div>
         {post.links.length ? (
-          <ul className="flex flex-wrap gap-2">
+          <ul className="flex flex-wrap justify-center gap-2 sm:justify-end">
             {post.links.map((link) => (
               <li key={`${link.href}-${link.label}`} className="max-w-full">
                 <a href={link.href} target="_blank" rel="noreferrer" className="block max-w-full truncate rounded-lg border border-yellow-400/40 px-3 py-1.5 text-sm font-bold text-yellow-400">{link.label}</a>

@@ -49,21 +49,21 @@ export function Header() {
   }
 
   return (
-    <header className="border-b border-yellow-400/30 bg-black/80">
+    <header className="sticky top-0 z-50 border-b border-yellow-400/30 bg-black/90 backdrop-blur">
       <div className="relative mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
         <Link href="/" className="shrink-0 text-lg font-extrabold tracking-wide text-yellow-400" aria-label="Início" onClick={() => setAccountMenu(false)}>CORDOVA RP</Link>
         <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-5 text-sm font-semibold md:flex">
           {links.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
         </nav>
         <div className="ml-auto flex items-center gap-3">
-        <button type="button" className="relative rounded-xl border border-yellow-400/50 p-2" aria-label="Abrir carrinho" onClick={() => setOpen(true)}>
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+        <button type="button" className="relative rounded-lg border border-yellow-400/50 p-1" aria-label="Abrir carrinho" onClick={() => setOpen(true)}>
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M6 6h15l-1.5 9h-12z" />
             <path d="M6 6 5 3H2" />
             <circle cx="9" cy="20" r="1" />
             <circle cx="18" cy="20" r="1" />
           </svg>
-          <span className="absolute -right-2 -top-2 grid h-5 min-w-5 place-items-center rounded-full bg-yellow-400 px-1 text-xs font-bold text-black">{count}</span>
+          <span className="absolute -right-1.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-yellow-400 px-0.5 text-[10px] font-bold leading-none text-black">{count}</span>
         </button>
         <div ref={accountRoot} className="relative">
           {account ? (
