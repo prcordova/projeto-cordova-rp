@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { formatBrl } from "@/lib/products";
-import { storeTermPoints } from "@/lib/store-terms";
+import { formatBrl, offerDuration, type Product } from "@/lib/products";
 import { useCart } from "@/store/cart";
 
 type PassportState =
@@ -33,8 +31,8 @@ export function CartDrawer() {
   const setTargetId = useCart((state) => state.setTargetId);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [accepted, setAccepted] = useState(false);
   const [passport, setPassport] = useState<PassportState>({ state: "empty" });
+  const [catalog, setCatalog] = useState<Product[]>([]);
   const total = lines.reduce((sum, line) => sum + line.price * line.qty, 0);
 
   useEffect(() => {
@@ -54,14 +52,20 @@ export function CartDrawer() {
     return () => window.clearTimeout(timer);
   }, [targetId]);
 
+  useEffect(() => {
+    if (!open) return;
+    fetch("/api/store")
+      .then((response) => response.json())
+      .then((data) => {
+        if (Array.isArray(data.items)) setCatalog(data.items);
+      })
+      .catch(() => undefined);
+  }, [open]);
+
   async function pay() {
     if (!lines.length) return;
     if (!/^\d+$/.test(targetId)) {
       setMessage("Informe o ID do jogador na cidade.");
-      return;
-    }
-    if (!accepted) {
-      setMessage("Aceite os termos da loja para finalizar a compra.");
       return;
     }
     setLoading(true);
@@ -117,19 +121,28 @@ export function CartDrawer() {
           <h2 className="text-lg font-extrabold">Carrinho</h2>
           <button type="button" className="rounded-lg border border-yellow-400/40 px-3 py-1 text-sm" onClick={() => setOpen(false)}>Fechar</button>
         </div>
-        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
-          {lines.length ? lines.map((line) => (
-            <div key={line.id} className="flex items-center gap-3 rounded-xl border border-yellow-400/30 bg-black p-3">
-              <img src={line.image} alt="" className="h-16 w-16 shrink-0 rounded-lg object-cover" />
-              <div className="min-w-0 flex-1">
-                <strong className="block truncate">{line.name}</strong>
-                <p className="text-sm text-white/70">{line.qty} × {formatBrl(line.price)}</p>
+        <div className="page-scroll min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+          {lines.length ? lines.map((line) => {
+            const product = catalog.find((item) => item.id === line.id);
+            const description = line.description || product?.description || "";
+            const duration = line.duration || (product ? offerDuration(product) : "");
+            return (
+              <div key={line.id} className="rounded-xl border border-yellow-400/30 bg-black p-3">
+                <div className="flex items-center gap-3">
+                  <img src={line.image} alt="" className="h-16 w-16 shrink-0 rounded-lg object-cover" />
+                  <div className="min-w-0 flex-1">
+                    <strong className="block truncate">{line.name}</strong>
+                    <p className="text-sm text-white/70">{line.qty} × {formatBrl(line.price)}</p>
+                  </div>
+                  <button type="button" className="shrink-0 rounded-lg border border-yellow-400 px-3 py-2 text-sm font-semibold text-yellow-400" onClick={() => removeOne(line.id)}>
+                    Remover
+                  </button>
+                </div>
+                {description ? <p className="mt-2 text-xs leading-snug text-white/70">{description}</p> : null}
+                {duration ? <p className="mt-1 text-xs font-semibold text-yellow-400">Duração: {duration}</p> : null}
               </div>
-              <button type="button" className="shrink-0 rounded-lg border border-yellow-400 px-3 py-2 text-sm font-semibold text-yellow-400" onClick={() => removeOne(line.id)}>
-                Remover
-              </button>
-            </div>
-          )) : <p className="text-sm text-white/70">Nenhum item escolhido.</p>}
+            );
+          }) : <p className="text-sm text-white/70">Nenhum item escolhido.</p>}
         </div>
         <div className="space-y-3 border-t border-yellow-400/30 p-4">
           <p className="text-right text-xl font-bold text-yellow-400">{formatBrl(total)}</p>
@@ -144,14 +157,8 @@ export function CartDrawer() {
             />
           </label>
           <p className={`text-sm ${passport.state === "found" ? "text-emerald-300" : passport.state === "missing" || passport.state === "offline" ? "text-red-300" : "text-white/60"}`}>{passportText}</p>
-          <div className="max-h-28 space-y-1 overflow-y-auto text-xs text-white/70">
-            {storeTermPoints.map((point) => <p key={point}>{point}</p>)}
-          </div>
-          <label className="flex items-start gap-2 text-sm">
-            <input type="checkbox" className="mt-1" checked={accepted} onChange={(event) => setAccepted(event.target.checked)} />
-            <span>Li e aceito os <Link href="/termos" className="font-semibold text-yellow-400" onClick={() => setOpen(false)}>termos da loja</Link>.</span>
-          </label>
-          <button type="button" disabled={loading || !lines.length || !accepted} className="w-full rounded-xl bg-yellow-400 px-4 py-3 font-bold text-black disabled:opacity-60" onClick={pay}>
+          <p className="text-xs text-white/60">Ao clicar em Finalizar compra você aceita os termos deste pedido.</p>
+          <button type="button" disabled={loading || !lines.length} className="w-full rounded-xl bg-yellow-400 px-4 py-3 font-bold text-black disabled:opacity-60" onClick={pay}>
             {loading ? "Conferindo ID..." : "Finalizar compra"}
           </button>
           {message ? <p className="text-sm text-yellow-200">{message}</p> : null}

@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import { cityBlipTypes, cityIdentity } from "./city";
+import { cityBlipTypes, cityHoldOrg, cityIdentity, cityReleaseOrg } from "./city";
 import { orgSalePrice } from "./catalog";
 import { getDb } from "./db";
 import { defaultProducts } from "./catalog";
@@ -134,6 +134,17 @@ export async function createCheckout(input: {
       return { ok: false as const, message: "O passaporte que recebe o blip precisa ser dono de uma organização." };
     }
   }
+  const reserved: string[] = [];
+  for (const line of lines) {
+    if (line.action !== "orgowner") continue;
+    const org = String(line.actionParams?.org || line.id);
+    const hold = await cityHoldOrg(org, input.targetId);
+    if (!hold.ok) {
+      await Promise.all(reserved.map((name) => cityReleaseOrg(name, input.targetId)));
+      return { ok: false as const, message: hold.message };
+    }
+    reserved.push(org);
+  }
   const total = Math.round(lines.reduce((sum, line) => sum + line.price * line.qty, 0) * 100) / 100;
   const db = await getDb();
   const inserted = await db.collection("orders").insertOne({
@@ -177,6 +188,7 @@ export async function createCheckout(input: {
   const url = data.init_point || data.sandbox_init_point;
   if (!preference.ok || !url) {
     await db.collection("orders").updateOne({ _id: inserted.insertedId }, { $set: { status: "expired" } });
+    await Promise.all(reserved.map((name) => cityReleaseOrg(name, input.targetId)));
     return { ok: false as const, message: "O Mercado Pago não abriu o checkout." };
   }
   return { ok: true as const, url: String(url), total };
@@ -250,8 +262,9 @@ export async function confirmPayment(paymentId: string) {
   }
   const delivery = await deliverToGame(order as { targetId: number; lines: OrderLine[] }, String(payment.id));
   if (!delivery.ok) {
-    await db.collection("orders").updateOne({ _id: orderId }, { $set: { status: "pending", lastError: delivery.message } });
-    return "retry" as const;
+    const blocked = /já tem dono|já está na fila/i.test(delivery.message);
+    await db.collection("orders").updateOne({ _id: orderId }, { $set: { status: blocked ? "conflict" : "pending", lastError: delivery.message } });
+    return blocked ? "ok" as const : "retry" as const;
   }
   await db.collection("orders").updateOne({ _id: orderId }, { $set: { status: "delivered", announced: true } });
   await announce(String(order.name || "Cidadão"), order.lines as OrderLine[], Number(order.targetId));

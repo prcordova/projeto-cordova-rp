@@ -223,6 +223,20 @@ export const defaultProducts: Product[] = [
 
 export const orgSalePrice = 1000;
 
+export function offerDuration(product: Pick<Product, "category" | "purchaseType" | "action" | "actionParams" | "placeKind">) {
+  if (product.placeKind === "faccao") return "Até o final da season";
+  if (product.purchaseType === "permanent" || product.action === "vipwipe") return "Até o wipe";
+  const days = product.actionParams?.days;
+  if (typeof days === "number" && days > 0) return `${days} dias`;
+  if (product.purchaseType === "weekly") return "7 dias";
+  if (product.purchaseType === "monthly") return "30 dias";
+  if (product.category === "mansions") return "30 dias";
+  if (product.action === "resetchar") return "1 uso, guardado até ser usado";
+  if (product.category === "crp" || product.action === "darcrp") return "Crédito imediato";
+  if (product.placeKind) return "Crédito até marcar o ponto";
+  return "Conforme a descrição";
+}
+
 export function formatBrl(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }

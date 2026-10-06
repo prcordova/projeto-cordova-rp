@@ -9,6 +9,8 @@ export type CartLine = {
   price: number;
   image: string;
   qty: number;
+  description?: string;
+  duration?: string;
 };
 
 type CartState = {
@@ -33,7 +35,7 @@ export const useCart = create<CartState>()(
       add: (line) => set((state) => {
         const current = state.lines.find((item) => item.id === line.id);
         const lines = current
-          ? state.lines.map((item) => item.id === line.id ? { ...item, qty: Math.min(5, item.qty + 1) } : item)
+          ? state.lines.map((item) => item.id === line.id ? { ...item, description: line.description || item.description, duration: line.duration || item.duration, qty: Math.min(5, item.qty + 1) } : item)
           : [...state.lines, { ...line, qty: 1 }];
         return { lines, open: true };
       }),

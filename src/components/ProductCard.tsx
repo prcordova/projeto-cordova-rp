@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, type ReactNode } from "react";
-import { formatBrl, formatCrp, type Product } from "@/lib/products";
+import { formatBrl, formatCrp, offerDuration, type Product } from "@/lib/products";
 import { useCart } from "@/store/cart";
 
 const maxTilt = 14;
@@ -86,7 +86,7 @@ export function ProductCard({
           <button
             type="button"
             className="w-full rounded-xl border border-yellow-400 bg-black px-4 py-3 font-bold text-yellow-400"
-            onClick={() => add({ id: product.id, name: product.name, price: product.price || 0, image: product.image })}
+            onClick={() => add({ id: product.id, name: product.name, price: product.price || 0, image: product.image, description: product.description, duration: offerDuration(product) })}
           >
             Adicionar ao carrinho
           </button>

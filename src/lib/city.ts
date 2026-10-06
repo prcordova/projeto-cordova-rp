@@ -79,6 +79,32 @@ export async function cityOrgs(): Promise<CityOrg[] | null> {
   }
 }
 
+export async function cityHoldOrg(org: string, userId: number) {
+  try {
+    const response = await cityFetch("/orgs/hold", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ org, userId })
+    });
+    const data = await response.json().catch(() => ({}));
+    return { ok: response.ok && data.ok !== false, message: String(data.message || "Não foi possível reservar a organização.") };
+  } catch {
+    return { ok: false, message: "A cidade não respondeu. Tente de novo." };
+  }
+}
+
+export async function cityReleaseOrg(org: string, userId: number) {
+  try {
+    await cityFetch("/orgs/release", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ org, userId })
+    });
+  } catch {
+    return;
+  }
+}
+
 export async function cityIdentity(query: { discord?: string | null; user?: number }): Promise<
   { state: "ok"; identity: CityIdentity } | { state: "missing" } | { state: "offline" }
 > {

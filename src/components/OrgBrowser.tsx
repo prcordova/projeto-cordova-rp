@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
-import { availabilityOptions, formatBrl, formatCrp, orgSalePrice, placeKinds, type Availability, type PlaceKind, type Product } from "@/lib/catalog";
+import { availabilityOptions, formatBrl, formatCrp, offerDuration, orgSalePrice, placeKinds, type Availability, type PlaceKind, type Product } from "@/lib/catalog";
 import type { RankEntry } from "@/lib/rankings";
 import { useCart } from "@/store/cart";
 
@@ -173,7 +173,7 @@ export function OrgBrowser() {
                   type="button"
                   className="w-full rounded-xl border border-yellow-400 bg-black px-4 py-3 font-bold text-yellow-400 disabled:opacity-60"
                   disabled={inCart}
-                  onClick={() => add({ id: product.id, name: product.name, price: product.price || 0, image: product.image })}
+                  onClick={() => add({ id: product.id, name: product.name, price: product.price || 0, image: product.image, description: product.description, duration: offerDuration(product) })}
                 >
                   {inCart ? "No carrinho" : `Comprar ${formatBrl(product.price)}`}
                 </button>

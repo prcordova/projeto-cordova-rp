@@ -65,7 +65,7 @@ export function RankBoards({ payload: given, only }: { payload?: RankPayload | n
               <div className="grid items-center gap-2 border-b border-yellow-400/20 py-2 text-[10px] font-extrabold uppercase tracking-wide text-yellow-400 sm:text-xs" style={{ gridTemplateColumns: template }}>
                 <span>#</span>
                 <span>Nome</span>
-                {cols.map((col) => <span key={col.label} className={col.text ? "truncate text-left" : "text-right"}>{col.label}</span>)}
+                {cols.map((col) => <span key={col.label} className={`${col.text ? "truncate text-left" : "text-right"} last:pr-4`}>{col.label}</span>)}
               </div>
               <div className="max-h-80 overflow-x-hidden overflow-y-auto pb-2 [scrollbar-color:#facc15_#000] [scrollbar-width:thin] sm:max-h-[22.5rem] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-yellow-400 [&::-webkit-scrollbar-track]:bg-black">
               {Array.from({ length: count }, (_, index) => {
@@ -76,7 +76,7 @@ export function RankBoards({ payload: given, only }: { payload?: RankPayload | n
                     <span className={index < 3 ? "font-extrabold text-yellow-400" : "text-white/45"}>{index + 1}º</span>
                     <span className="truncate font-semibold">{rows[index]?.name || "—"}</span>
                     {cells.map((cell, cellIndex) => (
-                      <span key={`${board.key}-${index}-${cols[cellIndex].label}`} className={`min-w-0 truncate tabular-nums ${cols[cellIndex].text ? "text-left font-semibold text-white/80" : "text-right font-bold text-yellow-400"}`}>{cell}</span>
+                      <span key={`${board.key}-${index}-${cols[cellIndex].label}`} className={`min-w-0 truncate tabular-nums last:pr-4 ${cols[cellIndex].text ? "text-left font-semibold text-white/80" : "text-right font-bold text-yellow-400"}`}>{cell}</span>
                     ))}
                   </div>
                 );

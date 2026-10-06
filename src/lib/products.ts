@@ -1,2 +1,2 @@
-export { formatBrl, formatCrp, categoryLabels } from "./catalog";
+export { formatBrl, formatCrp, categoryLabels, offerDuration } from "./catalog";
 export type { Product, ShopCategory } from "./catalog";
