@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import { cityBlipTypes, cityHoldOrg, cityIdentity, cityReleaseOrg } from "./city";
-import { defaultProducts, formatBrl, orgSalePrice } from "./catalog";
+import { defaultProducts, orgSalePrice } from "./catalog";
 import { getDb } from "./db";
 import { orgDossier } from "./org-details";
 import { findProduct } from "./catalog-server";
@@ -96,11 +96,11 @@ export async function createCheckout(input: {
         name: org.name,
         category: "organizacao",
         qty: 1,
-        price: orgSalePrice,
+        price: product?.price ?? orgSalePrice,
         action: "orgowner",
         actionParams: { org: org.name, term: "season" },
         image: "/imagens/organizacoes.png",
-        description: orgDossier(org.name)?.summary || `Venda única por ${formatBrl(orgSalePrice)}. O cargo de dono vale até o final da season.`,
+        description: orgDossier(org.name)?.summary || "Venda única. O cargo de dono vale até o final da season.",
         benefits: ["Venda única", "Até o final da season"]
       });
       needsPassport = true;

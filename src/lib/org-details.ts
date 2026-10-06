@@ -4,12 +4,12 @@ export type OrgDossier = {
   summary: string;
   role: string;
   produces: string;
-  drugs: string;
-  weapons: string;
-  ammo: string;
+  place: string;
+  work: string[];
   ranks: string;
   commands: string[];
   kit: string[];
+  missing: string[];
 };
 
 const kit = [
@@ -45,14 +45,14 @@ const policeCommands = [
   "/911 anuncia na cidade. /pd fala só com a polícia em serviço. /anuncio abre um anúncio geral."
 ];
 
-function entry(data: Omit<OrgDossier, "kit" | "drugs" | "weapons" | "ammo"> & Partial<Pick<OrgDossier, "drugs" | "weapons" | "ammo">>): OrgDossier {
-  return {
-    drugs: "Não produz droga.",
-    weapons: "Não fabrica arma.",
-    ammo: "Não fabrica munição.",
-    ...data,
-    kit
-  };
+const weaponCraft = "Fabrica pistola MK2, pistola SNS MK2, machine pistol, micro SMG, SMG MK2, escopeta de cano serrado, fuzil e fuzil MK2.";
+const ammoCraft = "Fabrica 20 munições por craft de pistola MK2, pistola SNS MK2, machine pistol, micro SMG, SMG MK2, escopeta de cano serrado, fuzil e fuzil MK2.";
+const washCraft = "Lava dinheiro sujo em dinheiro e fabrica C4, pendrive, algemas, colete, lockpick e capuz.";
+const routeOff = "A rota para começar ainda está em 0, 0, 0.";
+const noChat = "Sem comando de chat.";
+
+function entry(data: Omit<OrgDossier, "kit">): OrgDossier {
+  return { ...data, kit };
 }
 
 const catalog: OrgDossier[] = [
@@ -61,7 +61,9 @@ const catalog: OrgDossier[] = [
     title: "Hospital",
     summary: "Atendimento médico. Reanima, trata e atende chamado.",
     role: "Organização de saúde. O baú da cidade é HOSPITAL.",
-    produces: "Não produz droga, arma nem munição. O serviço é reanimação e tratamento.",
+    produces: "Reanimação, tratamento e chamado médico.",
+    place: "Hospital",
+    work: ["Reanima quem está em coma e trata quem está consciente.", "Atende chamado médico pelo F5."],
     ranks: "DiretorHP, Medico, Paramedico, Enfermeiro. O dono fica acima, em OwnerHospital.",
     commands: [
       "Bater ponto no menu ESC.",
@@ -72,68 +74,89 @@ const catalog: OrgDossier[] = [
       "/ems mostra quantos paramédicos estão em serviço.",
       "/dv apaga o veículo mais próximo e só o Diretor usa.",
       "/112 anuncia o hospital na cidade. /pr fala só com a equipe em serviço."
-    ]
+    ],
+    missing: []
   }),
   entry({
     id: "Bombeiros",
     title: "Bombeiros",
-    summary: "Corpo de Bombeiros. Farm AFK de dinheiro ligado. Sem comando de chat.",
-    role: "Organização de bombeiros. O topo atual continua ComandoGeralBombeiro. O baú da cidade previsto é BOMBEIROS, mas esse nome não está na lista atual de baús.",
-    produces: "Não produz droga, arma nem munição. O farm AFK está ligado e entrega 1 dinheiro a cada 60 segundos.",
+    summary: "Corpo de Bombeiros. Farm AFK de dinheiro.",
+    role: "Organização de bombeiros. O topo atual é ComandoGeralBombeiro.",
+    produces: "Farm AFK de dinheiro.",
+    place: "Farm AFK dos Bombeiros",
+    work: ["Farm AFK ligado: 1 dinheiro a cada 60 segundos."],
     ranks: "ComandoGeralBombeiro, SubComandoBombeiro, CoronelBombeiro, TenCoronelBombeiro, MajorBombeiro, CapitaoBombeiro, TenenteBombeiro, SubtenenteBombeiro, SargentoBombeiro, CaboBombeiro, SoldadoBombeiro. O dono fica acima, em OwnerBombeiros.",
-    commands: ["Não há comando exclusivo cadastrado para o Corpo de Bombeiros."]
+    commands: [],
+    missing: ["Sem comando de chat.", "O baú BOMBEIROS não está na lista atual de baús.", "Sem blip da sede no mapa."]
   }),
   entry({
     id: "PM",
     title: "Polícia Militar",
-    summary: "Polícia militar. Patrulha, apreensão, multa e chamado.",
+    summary: "Patrulha, apreensão, multa e chamado.",
     role: "Organização policial. O baú da cidade é PM. Os comandos valem com o ponto batido.",
-    produces: "Não produz droga, arma ilegal nem munição. O arsenal abre com /arsenal.",
+    produces: "Patrulha, apreensão, multa e chamado.",
+    place: "Polícia Militar",
+    work: ["Patrulha, apreensão, multa e chamado policial.", "O arsenal abre com /arsenal."],
     ranks: "LiderPM, Coronel, TenCoronel, Capitão, Tenente, Sargento, Soldado, Recruta. O dono fica acima, em OwnerPM.",
-    commands: policeCommands
+    commands: policeCommands,
+    missing: []
   }),
   entry({
     id: "PRF",
     title: "PRF",
-    summary: "Polícia rodoviária. Mesmos comandos da polícia.",
+    summary: "Polícia rodoviária. Patrulha, apreensão, multa e chamado.",
     role: "Organização policial. O baú da cidade é PRF. Os comandos valem com o ponto batido.",
-    produces: "Não produz droga, arma ilegal nem munição. O arsenal abre com /arsenal.",
+    produces: "Patrulha, apreensão, multa e chamado.",
+    place: "PRF",
+    work: ["Patrulha, apreensão, multa e chamado.", "O arsenal abre com /arsenal."],
     ranks: "LiderPRF e PRF. O dono fica acima, em OwnerPRF.",
-    commands: policeCommands
+    commands: policeCommands,
+    missing: []
   }),
   entry({
     id: "Exercito",
     title: "Exército",
-    summary: "Exército. Mesmos comandos da polícia.",
+    summary: "Exército. Patrulha, apreensão, multa e chamado.",
     role: "Organização policial. O baú da cidade é EXERCITO. Os comandos valem com o ponto batido.",
-    produces: "Não produz droga, arma ilegal nem munição. O arsenal abre com /arsenal.",
+    produces: "Patrulha, apreensão, multa e chamado.",
+    place: "Exército Brasileiro",
+    work: ["Patrulha, apreensão, multa e chamado.", "O arsenal abre com /arsenal."],
     ranks: "LiderExercito e Exercito. O dono fica acima, em OwnerExercito.",
-    commands: policeCommands
+    commands: policeCommands,
+    missing: []
   }),
   entry({
     id: "PolicialCivil",
     title: "Polícia Civil",
-    summary: "Polícia civil. Mesmos comandos da polícia. Farm AFK de dinheiro ligado.",
+    summary: "Polícia civil. Patrulha e farm AFK de dinheiro.",
     role: "Organização policial. O baú da cidade é POLICIA-CIVIL. Os comandos valem com o ponto batido.",
-    produces: "Não produz droga, arma ilegal nem munição. O arsenal abre com /arsenal. O farm AFK está ligado e entrega 1 dinheiro a cada 60 segundos.",
+    produces: "Patrulha, apreensão, multa, chamado e farm AFK de dinheiro.",
+    place: "Polícia Civil",
+    work: ["Patrulha, apreensão, multa e chamado.", "O arsenal abre com /arsenal.", "Farm AFK ligado: 1 dinheiro a cada 60 segundos."],
     ranks: "LiderCivil e PolicialCivil. O dono fica acima, em OwnerPolicialCivil.",
-    commands: policeCommands
+    commands: policeCommands,
+    missing: []
   }),
   entry({
     id: "ROTA",
     title: "ROTA",
-    summary: "ROTA. Mesmos comandos da polícia.",
+    summary: "ROTA. Patrulha, apreensão, multa e chamado.",
     role: "Organização policial. O baú da cidade é ROTA. Os comandos valem com o ponto batido.",
-    produces: "Não produz droga, arma ilegal nem munição. O arsenal abre com /arsenal.",
+    produces: "Patrulha, apreensão, multa e chamado.",
+    place: "ROTA",
+    work: ["Patrulha, apreensão, multa e chamado.", "O arsenal abre com /arsenal."],
     ranks: "LiderROTA e ROTA. O dono fica acima, em OwnerROTA.",
-    commands: policeCommands
+    commands: policeCommands,
+    missing: []
   }),
   entry({
     id: "TribunalJustica",
     title: "Tribunal de Justiça",
     summary: "Tribunal. Processos, identidade e condução.",
-    role: "Organização jurídica. O baú da cidade é TRIBUNAL. Os comandos valem com o ponto batido.",
-    produces: "Não produz droga, arma nem munição.",
+    role: "Organização jurídica. Os comandos valem com o ponto batido.",
+    produces: "Processos, identidade e condução.",
+    place: "Tribunal",
+    work: ["Abre processos em /causas.", "Mostra identidade e conduz a pessoa."],
     ranks: "Juiz, SecretarioJustica, Promotor, Advogado, OficialJustica, PeritoJudicial, Conciliador, AssistenteJuridico. O dono fica acima, em OwnerTribunalJustica.",
     commands: [
       "Bater ponto no menu ESC.",
@@ -144,23 +167,29 @@ const catalog: OrgDossier[] = [
       "/rmascara, /rchapeu e /rcapuz mexem na roupa de quem está perto.",
       "/cv coloca a pessoa no veículo e /rv tira do veículo.",
       "/911 anuncia na cidade e só o Juiz envia."
-    ]
+    ],
+    missing: ["O baú TRIBUNAL não está na lista atual de baús.", "Sem blip da sede no mapa."]
   }),
   entry({
     id: "Restaurante",
     title: "Restaurante",
-    summary: "Restaurante. O ponto e as bebidas ficam no local de trabalho.",
-    role: "Organização legal. O baú configurado é Restaurante.",
-    produces: "Não produz droga, arma nem munição. O farm de ingredientes (leite, trigo, molho de tomate, queijo, macarrão, carne de hambúrguer, tempero, pão, legumes e carne moída) está desligado, sem ponto no mapa.",
+    summary: "Restaurante. Ponto no local de trabalho.",
+    role: "Organização de restaurante.",
+    produces: "Ponto no local de trabalho.",
+    place: "Restaurante",
+    work: ["Bate ponto no menu ESC."],
     ranks: "ChefeCozinha, GerenteRestaurante, Cozinheiro. O dono fica acima, em OwnerRestaurante.",
-    commands: ["Bater ponto no menu ESC."]
+    commands: ["Bater ponto no menu ESC."],
+    missing: ["Farm AFK de ingredientes desligado e sem ponto.", "O baú Restaurante não está na lista atual de baús.", "Sem blip da sede no mapa."]
   }),
   entry({
     id: "Redline",
     title: "Redline",
     summary: "Oficina. Repara veículo e anuncia a central mecânica.",
     role: "Mecânica legal. O baú da cidade é REDLINE. Os comandos valem com o ponto batido.",
-    produces: "Não produz droga, arma nem munição. O serviço é reparo de veículo.",
+    produces: "Reparo de veículo e anúncio da central mecânica.",
+    place: "Mecânica",
+    work: ["Repara o veículo mais próximo.", "Anuncia a central mecânica na cidade."],
     ranks: "RedlineChefe, Redline, RedlineRecruta. O dono fica acima, em OwnerRedline.",
     commands: [
       "Bater ponto no menu ESC.",
@@ -168,128 +197,157 @@ const catalog: OrgDossier[] = [
       "/dv apaga o veículo mais próximo.",
       "/mec anuncia a central mecânica na cidade.",
       "/mr fala só com a Redline em serviço."
-    ]
+    ],
+    missing: []
   }),
   entry({
     id: "Speed",
     title: "Speed",
-    summary: "Mecânica ilegal e desmanche. Não bate ponto.",
-    role: "Facção com desmanche, reparo e chamado de mecânico. O baú da cidade é SPEED.",
-    produces: "Desmanche, reparo e chamado de mecânico. Não produz droga, arma nem munição. A rota de desmanche entrega chave, mas o ponto para começar ainda está em 0, 0, 0. O farm AFK está desligado.",
+    summary: "Mecânica ilegal e desmanche.",
+    role: "Facção de desmanche e mecânica. O baú da cidade é SPEED.",
+    produces: "Desmanche, reparo e chamado de mecânico.",
+    place: "Mecânica",
+    work: ["Desmanche de veículo.", "Reparo e chamado de mecânico.", "A rota de desmanche entrega chave."],
     ranks: "LiderSpeed, GerenteSpeed, Speed. O dono fica acima, em OwnerSpeed.",
     commands: [
-      "Não bate ponto. Os comandos valem com o cargo ativo.",
       "/reparar conserta o veículo mais próximo, fora do carro.",
       "/rgbcar aplica a pintura RGB no veículo.",
       "/cone e /barreira colocam o objeto à frente.",
       "/placa consulta a placa do veículo próximo."
-    ]
+    ],
+    missing: ["Não bate ponto.", "Farm AFK desligado e sem ponto.", routeOff]
   }),
   entry({
     id: "Furious",
     title: "Furious",
-    summary: "Desmanche. Sem rádio e sem ponto.",
-    role: "Facção de desmanche. O baú da cidade é Furious. O desmanche abre no local da facção.",
-    produces: "Desmanche de veículo. Não fabrica droga, arma nem munição. A rota de desmanche entrega chave, mas o ponto para começar ainda está em 0, 0, 0. O farm AFK está desligado. Não tem rádio nem ponto.",
+    summary: "Desmanche de veículo.",
+    role: "Facção de desmanche. O baú da cidade é FURIOUS.",
+    produces: "Desmanche de veículo.",
+    place: "",
+    work: ["Desmanche de veículo.", "A rota de desmanche entrega chave."],
     ranks: "LiderFurious, GerenteFurious, Furious. O dono fica acima, em OwnerFurious.",
-    commands: ["/placa consulta a placa do veículo próximo."]
+    commands: ["/placa consulta a placa do veículo próximo."],
+    missing: ["Não bate ponto.", "Sem rádio.", "Farm AFK desligado e sem ponto.", routeOff, "Sem blip de área de risco com o nome da Furious."]
   }),
   entry({
     id: "Tequila",
     title: "Tequila",
-    summary: "Facção Tequila. Sem produção e sem comando exclusivo.",
-    role: "Facção com baú Tequila. Não há produção nem comando exclusivo cadastrados para o cargo.",
-    produces: "Não produz droga, arma, munição, desmanche nem lavagem. O baú configurado se chama Tequila, mas esse nome não está na lista atual de baús. No painel existem líder, gerente e membro; no groups só está cadastrado o dono.",
+    summary: "Facção Tequila.",
+    role: "Facção Tequila.",
+    produces: "Facção Tequila.",
+    place: "",
+    work: [],
     ranks: "LiderTequila, GerenteTequila, Tequila. O dono fica acima, em OwnerTequila.",
-    commands: ["Não há comando exclusivo cadastrado para a Tequila."]
+    commands: [],
+    missing: ["Sem produção cadastrada.", "Sem comando exclusivo.", "O baú Tequila não está na lista atual de baús.", "No groups só o dono está cadastrado.", "Sem blip de área de risco no mapa."]
   }),
   entry({
     id: "ADA",
     title: "ADA",
-    summary: "Facção de droga. Sem arma e sem munição. A produção específica ainda não está ligada.",
-    role: "Amigos dos Amigos. O baú da cidade é ADA. Não tem comando de chat.",
-    produces: "Droga. Não fabrica arma nem munição.",
-    drugs: "Permissão drogas.permissao. Hoje não há bancada de droga nem uma droga reservada para a ADA. A rota de drogas está desligada. O farm AFK está sem ponto e, no preset atual, entregaria só dinheiro.",
+    summary: "Facção de droga.",
+    role: "Amigos dos Amigos. O baú da cidade é ADA.",
+    produces: "Farm de droga.",
+    place: "Área de Risco",
+    work: ["Farm de droga."],
     ranks: "LiderADA, GerenteADA, ADA. O dono fica acima, em OwnerADA.",
-    commands: ["Não há comando de chat. A produção de droga não está ligada."]
+    commands: [],
+    missing: [noChat, "Farm AFK desligado e sem ponto.", "Rota de drogas desligada.", "Sem bancada com uma droga específica."]
   }),
   entry({
     id: "PCC",
     title: "PCC",
-    summary: "Facção de droga. Sem arma e sem munição. A produção específica ainda não está ligada.",
-    role: "Primeiro Comando da Capital. O baú da cidade é PCC. Não tem comando de chat.",
-    produces: "Droga. Não fabrica arma nem munição.",
-    drugs: "Permissão drogas.permissao. Hoje não há bancada de droga nem uma droga reservada para o PCC. A rota de drogas está desligada. O farm AFK está sem ponto e, no preset atual, entregaria só dinheiro.",
+    summary: "Facção de droga.",
+    role: "Primeiro Comando da Capital. O baú da cidade é PCC.",
+    produces: "Farm de droga.",
+    place: "Área de Risco",
+    work: ["Farm de droga."],
     ranks: "LiderPCC, GerentePCC, PCC. O dono fica acima, em OwnerPCC.",
-    commands: ["Não há comando de chat. A produção de droga não está ligada."]
+    commands: [],
+    missing: [noChat, "Farm AFK desligado e sem ponto.", "Rota de drogas desligada.", "Sem bancada com uma droga específica."]
   }),
   entry({
     id: "Turquia",
     title: "Turquia",
-    summary: "Facção de droga. Sem arma e sem munição. A produção específica ainda não está ligada.",
-    role: "Facção Turquia. O baú da cidade é TURQUIA. Não tem comando de chat.",
-    produces: "Droga. Não fabrica arma nem munição.",
-    drugs: "Permissão drogas.permissao. Hoje não há bancada de droga nem uma droga reservada para a Turquia. A rota de drogas está desligada. O farm AFK está sem ponto e, no preset atual, entregaria só dinheiro.",
+    summary: "Facção de droga.",
+    role: "Facção Turquia. O baú da cidade é TURQUIA.",
+    produces: "Farm de droga.",
+    place: "",
+    work: ["Farm de droga."],
     ranks: "LiderTurquia, GerenteTurquia, Turquia. O dono fica acima, em OwnerTurquia.",
-    commands: ["Não há comando de chat. A produção de droga não está ligada."]
+    commands: [],
+    missing: [noChat, "Farm AFK desligado e sem ponto.", "Rota de drogas desligada.", "Sem bancada com uma droga específica.", "Sem blip de área de risco no mapa."]
   }),
   entry({
     id: "TDC",
     title: "TDC",
-    summary: "Croácia. Produção de munição. Farm AFK desligado.",
-    role: "Tropa da Croácia. O baú da cidade é CROACIA. Não tem comando de chat.",
-    produces: "Munição. Não produz droga nem arma.",
-    ammo: "Permissão municao.permissao. Cada fabricação entrega 20 munições de pistola MK2, pistola SNS MK2, machine pistol, micro SMG, SMG MK2, escopeta de cano serrado, fuzil ou fuzil MK2. A rota entrega cápsulas, pólvora e ferro, mas o ponto para começar ainda está em 0, 0, 0. O farm AFK da TDC está desligado.",
+    summary: "Croácia. Farm de munição.",
+    role: "Tropa da Croácia. O baú da cidade é CROACIA.",
+    produces: "Farm de munição.",
+    place: "Área de Risco",
+    work: ["Farm de munição.", ammoCraft, "A rota entrega cápsulas, pólvora e ferro."],
     ranks: "LiderTDC, GerenteTDC, TDC. O dono fica acima, em OwnerTDC.",
-    commands: ["Não há comando de chat. A produção de munição abre no ponto da facção."]
+    commands: [],
+    missing: [noChat, "Farm AFK desligado e sem ponto.", routeOff]
   }),
   entry({
     id: "TremBala",
     title: "Trem Bala",
-    summary: "Produção de munição. Farm AFK de cápsulas, pólvora e ferro ligado.",
-    role: "Facção Trem Bala. O baú da cidade é TREM-BALA. Não tem comando de chat.",
-    produces: "Munição. Não produz droga nem arma.",
-    ammo: "Permissão municao.permissao. Cada fabricação entrega 20 munições de pistola MK2, pistola SNS MK2, machine pistol, micro SMG, SMG MK2, escopeta de cano serrado, fuzil ou fuzil MK2. A rota entrega cápsulas, pólvora e ferro, mas o ponto para começar ainda está em 0, 0, 0. O farm AFK está ligado e, a cada 60 segundos, entrega 1 cápsula, 1 pólvora, 1 ferro e 1 dinheiro.",
+    summary: "Farm de munição. Farm AFK de cápsulas, pólvora e ferro.",
+    role: "Facção Trem Bala. O baú da cidade é TREM-BALA.",
+    produces: "Farm de munição.",
+    place: "Área de Risco",
+    work: ["Farm de munição.", ammoCraft, "A rota entrega cápsulas, pólvora e ferro.", "Farm AFK ligado: a cada 60 segundos entrega 1 cápsula, 1 pólvora, 1 ferro e 1 dinheiro."],
     ranks: "LiderTremBala, GerenteTremBala, TremBala. O dono fica acima, em OwnerTremBala.",
-    commands: ["Não há comando de chat. A produção de munição abre no ponto da facção."]
+    commands: [],
+    missing: [noChat, routeOff]
   }),
   entry({
     id: "Mafia",
     title: "Máfia",
-    summary: "Produção de armas. Farm AFK desligado.",
-    role: "Facção Máfia. O baú da cidade é MAFIA. Não tem comando de chat.",
-    produces: "Armas. Não produz droga nem munição.",
-    weapons: "Permissão armas.permissao. Fabrica pistola MK2, pistola SNS MK2, machine pistol, micro SMG, SMG MK2, escopeta de cano serrado, fuzil e fuzil MK2. A rota entrega peça de arma, molas, gatilho, corpo de arma e dinheiro sujo, mas o ponto para começar ainda está em 0, 0, 0. O farm AFK da Máfia está desligado.",
+    summary: "Farm de armas.",
+    role: "Facção Máfia. O baú da cidade é MAFIA.",
+    produces: "Farm de armas.",
+    place: "Área de Risco",
+    work: ["Farm de armas.", weaponCraft, "A rota entrega peça de arma, molas, gatilho, corpo de arma e dinheiro sujo."],
     ranks: "LiderMafia, GerenteMafia, Mafia. O dono fica acima, em OwnerMafia.",
-    commands: ["Não há comando de chat. A produção de armas abre no ponto da facção."]
+    commands: [],
+    missing: [noChat, "Farm AFK desligado e sem ponto.", routeOff]
   }),
   entry({
     id: "Japao",
     title: "Japão",
-    summary: "Produção de armas. Farm AFK de peças ligado.",
-    role: "Facção Japão. O baú da cidade é JAPAO. Não tem comando de chat.",
-    produces: "Armas. Não produz droga nem munição.",
-    weapons: "Permissão armas.permissao. Fabrica pistola MK2, pistola SNS MK2, machine pistol, micro SMG, SMG MK2, escopeta de cano serrado, fuzil e fuzil MK2. A rota entrega peça de arma, molas, gatilho, corpo de arma e dinheiro sujo, mas o ponto para começar ainda está em 0, 0, 0. O farm AFK está ligado e, a cada 60 segundos, entrega 1 peça de arma, 1 mola, 1 gatilho, 1 corpo de arma e 1 dinheiro.",
+    summary: "Farm de armas. Farm AFK de peças.",
+    role: "Facção Japão. O baú da cidade é JAPAO.",
+    produces: "Farm de armas.",
+    place: "Área de Risco",
+    work: ["Farm de armas.", weaponCraft, "A rota entrega peça de arma, molas, gatilho, corpo de arma e dinheiro sujo.", "Farm AFK ligado: a cada 60 segundos entrega 1 peça de arma, 1 mola, 1 gatilho, 1 corpo de arma e 1 dinheiro."],
     ranks: "LiderJapao, GerenteJapao, Japao. O dono fica acima, em OwnerJapao.",
-    commands: ["Não há comando de chat. A produção de armas abre no ponto da facção."]
+    commands: [],
+    missing: [noChat, routeOff]
   }),
   entry({
     id: "Vanilla",
     title: "Vanilla",
-    summary: "Lavagem de dinheiro no ponto da facção.",
-    role: "Facção Vanilla. O baú da cidade é VANILLA. Não tem comando de chat.",
-    produces: "Lavagem. Não produz droga, arma nem munição. Troca dinheiro sujo por dinheiro e fabrica C4, pendrive, algemas, colete, lockpick e capuz. A rota entrega plástico, cobre, borracha, alumínio, linha e tesoura, mas o ponto para começar ainda está em 0, 0, 0. O farm AFK está desligado.",
+    summary: "Lavagem de dinheiro.",
+    role: "Facção Vanilla. O baú da cidade é VANILLA.",
+    produces: "Lavagem de dinheiro.",
+    place: "Vanilla",
+    work: ["Lavagem de dinheiro.", washCraft, "A rota entrega plástico, cobre, borracha, alumínio, linha e tesoura."],
     ranks: "LiderVanilla, GerenteVanilla, Vanilla. O dono fica acima, em OwnerVanilla.",
-    commands: ["Não há comando de chat. A lavagem abre no ponto da facção."]
+    commands: [],
+    missing: [noChat, "Farm AFK desligado e sem ponto.", routeOff]
   }),
   entry({
     id: "Bahamas",
     title: "Bahamas",
-    summary: "Lavagem de dinheiro no ponto da facção.",
-    role: "Facção Bahamas. O baú da cidade é BAHAMAS. Não tem comando de chat.",
-    produces: "Lavagem. Não produz droga, arma nem munição. Troca dinheiro sujo por dinheiro e fabrica C4, pendrive, algemas, colete, lockpick e capuz. A rota entrega plástico, cobre, borracha, alumínio, linha e tesoura, mas o ponto para começar ainda está em 0, 0, 0. O farm AFK está desligado.",
+    summary: "Lavagem de dinheiro.",
+    role: "Facção Bahamas. O baú da cidade é BAHAMAS.",
+    produces: "Lavagem de dinheiro.",
+    place: "Bahamas",
+    work: ["Lavagem de dinheiro.", washCraft, "A rota entrega plástico, cobre, borracha, alumínio, linha e tesoura."],
     ranks: "LiderBahamas, GerenteBahamas, Bahamas. O dono fica acima, em OwnerBahamas.",
-    commands: ["Não há comando de chat. A lavagem abre no ponto da facção."]
+    commands: [],
+    missing: [noChat, "Farm AFK desligado e sem ponto.", routeOff]
   })
 ];
 

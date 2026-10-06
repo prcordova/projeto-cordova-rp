@@ -23,7 +23,7 @@ export const storeTermSections = [
   },
   {
     title: "Organização e facção",
-    body: "Cada organização custa R$ 299,99. A venda é única e só fecha no passaporte ligado ao Discord de quem está comprando. O cargo de dono vale até o final da season. Quem já tem dono sai da venda. Sem Discord ligado a um passaporte, essa compra não segue."
+    body: "A venda é única e só fecha no passaporte ligado ao Discord de quem está comprando. O preço é o que está no card de cada organização. O cargo de dono vale até o final da season. Quem já tem dono sai da venda. Sem Discord ligado a um passaporte, essa compra não segue."
   },
   {
     title: "Blips",

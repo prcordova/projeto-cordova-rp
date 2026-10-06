@@ -107,10 +107,10 @@ export function OrgBrowser() {
         id: overlay?.id || name,
         name: overlay?.name || name,
         category: "organizacao",
-        price: orgSalePrice,
+        price: overlay?.price ?? orgSalePrice,
         crpPrice: null,
         image: overlay?.image || "/imagens/organizacoes.png",
-        description: orgDossier(name)?.summary || "Venda única por R$ 299,99. O cargo de dono vale até o final da season.",
+        description: orgDossier(name)?.summary || "Venda única. O cargo de dono vale até o final da season.",
         benefits: ["Venda única", "Até o final da season"],
         placeKind: "faccao",
         location: overlay?.location || "Na cidade",
@@ -164,7 +164,7 @@ export function OrgBrowser() {
             const availability = product.availability || "venda";
             const dossier = product.placeKind === "faccao" ? orgDossier(product.id) || orgDossier(product.name) : undefined;
             const lines = product.placeKind === "faccao"
-              ? [dossier?.produces || "Venda única", "Até o final da season", product.location || "Na cidade"]
+              ? [dossier?.produces || "Organização", dossier?.place, "Até o final da season"].filter((line): line is string => Boolean(line))
               : [product.location || "Sem localização", kindLabel(product), ...product.benefits].slice(0, 3);
             const shown = { ...product, benefits: lines };
             const note = "flex min-h-12 items-center justify-center rounded-xl border border-yellow-400/30 px-3 text-center text-sm font-semibold text-yellow-400";
@@ -200,7 +200,7 @@ export function OrgBrowser() {
                 key={product.id}
                 product={shown}
                 badge={statusLabel(product)}
-                priceLabel={product.placeKind === "faccao" ? formatBrl(orgSalePrice) : product.crpPrice ? formatCrp(product.crpPrice) : undefined}
+                priceLabel={product.placeKind === "faccao" ? formatBrl(product.price || orgSalePrice) : product.crpPrice ? formatCrp(product.crpPrice) : undefined}
                 onToggle={() => setSelected(product)}
                 footer={
                   <div className="space-y-2" onClick={(event) => event.stopPropagation()}>
@@ -222,38 +222,30 @@ export function OrgBrowser() {
 
 function OrgDetails({ product, onClose }: { product: Product; onClose: () => void }) {
   const dossier = product.placeKind === "faccao" ? orgDossier(product.id) || orgDossier(product.name) : undefined;
-  const blocks = dossier
-    ? [
-        ["O que é", dossier.role],
-        ["O que faz", dossier.produces],
-        ["Drogas", dossier.drugs],
-        ["Armas", dossier.weapons],
-        ["Munição", dossier.ammo],
-        ["Cargos", dossier.ranks]
-      ]
-    : [["O que é", product.description]];
+  const price = product.placeKind === "faccao" ? product.price || orgSalePrice : product.price || 0;
+  const blocks: { title: string; text?: string; lines?: string[] }[] = [];
+  if (dossier) {
+    blocks.push({ title: "O que é", text: dossier.role });
+    if (dossier.work.length) blocks.push({ title: "O que faz", lines: dossier.work });
+    else if (dossier.produces) blocks.push({ title: "O que faz", text: dossier.produces });
+    if (dossier.place) blocks.push({ title: "Onde fica", text: dossier.place });
+    if (dossier.ranks) blocks.push({ title: "Cargos", text: dossier.ranks });
+    if (dossier.commands.length) blocks.push({ title: "Comandos", lines: dossier.commands });
+    if (dossier.kit.length) blocks.push({ title: "O que vem na compra", lines: dossier.kit });
+    if (dossier.missing.length) blocks.push({ title: "Configurações", lines: dossier.missing });
+  } else {
+    blocks.push({ title: "O que é", text: product.description });
+  }
   return (
     <Modal title={product.name} onClose={onClose} wide>
       <div className="space-y-4 text-sm leading-relaxed text-white/85">
-        <p className="font-bold text-yellow-400">{product.placeKind === "faccao" ? `${formatBrl(orgSalePrice)}. Venda única até o final da season.` : formatBrl(product.price || 0)}</p>
-        {blocks.map(([title, text]) => (
-          <section key={title}>
-            <h3 className="mb-1 font-extrabold text-yellow-400">{title}</h3>
-            <p>{text}</p>
+        <p className="font-bold text-yellow-400">{price ? `${formatBrl(price)}. Venda única até o final da season.` : ""}</p>
+        {blocks.map((block) => (
+          <section key={block.title}>
+            <h3 className="mb-1 font-extrabold text-yellow-400">{block.title}</h3>
+            {block.lines ? <ul className="list-disc space-y-1 pl-5">{block.lines.map((line) => <li key={line}>{line}</li>)}</ul> : <p>{block.text}</p>}
           </section>
         ))}
-        {dossier ? (
-          <>
-            <section>
-              <h3 className="mb-1 font-extrabold text-yellow-400">O que vem na compra</h3>
-              <ul className="list-disc space-y-1 pl-5">{dossier.kit.map((line) => <li key={line}>{line}</li>)}</ul>
-            </section>
-            <section>
-              <h3 className="mb-1 font-extrabold text-yellow-400">Comandos</h3>
-              <ul className="list-disc space-y-1 pl-5">{dossier.commands.map((line) => <li key={line}>{line}</li>)}</ul>
-            </section>
-          </>
-        ) : null}
       </div>
     </Modal>
   );
