@@ -8,6 +8,7 @@ const slots = 10;
 export function RankBoards({ payload: given, only }: { payload?: RankPayload | null; only?: RankKey }) {
   const [payload, setPayload] = useState<RankPayload | null | undefined>(given);
   const [loading, setLoading] = useState(given === undefined);
+  const [me, setMe] = useState("");
 
   useEffect(() => {
     if (given !== undefined) return;
@@ -27,6 +28,19 @@ export function RankBoards({ payload: given, only }: { payload?: RankPayload | n
       cancel = true;
     };
   }, [given]);
+
+  useEffect(() => {
+    let cancel = false;
+    fetch("/api/me/character")
+      .then((response) => response.json())
+      .then((data) => {
+        if (!cancel && typeof data.name === "string") setMe(data.name.trim().toLocaleLowerCase("pt-BR"));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancel = true;
+    };
+  }, []);
 
   const boards = only ? rankBoards.filter((board) => board.key === only) : rankBoards;
   if (loading) {
@@ -56,8 +70,9 @@ export function RankBoards({ payload: given, only }: { payload?: RankPayload | n
               <div className="max-h-80 overflow-x-hidden overflow-y-auto pb-2 [scrollbar-color:#facc15_#000] [scrollbar-width:thin] sm:max-h-[22.5rem] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-yellow-400 [&::-webkit-scrollbar-track]:bg-black">
               {Array.from({ length: count }, (_, index) => {
                 const cells = rankCells(board.key, rows[index]);
+                const mine = Boolean(me) && (rows[index]?.name || "").trim().toLocaleLowerCase("pt-BR") === me;
                 return (
-                  <div key={`${board.key}-${index}`} className="grid h-8 items-center gap-2 border-b border-white/10 text-xs last:border-b-0 sm:h-9 sm:text-sm" style={{ gridTemplateColumns: template }}>
+                  <div key={`${board.key}-${index}`} className={`grid h-8 items-center gap-2 border-b border-white/10 text-xs last:border-b-0 sm:h-9 sm:text-sm ${mine ? "bg-yellow-400/15" : ""}`} style={{ gridTemplateColumns: template }}>
                     <span className={index < 3 ? "font-extrabold text-yellow-400" : "text-white/45"}>{index + 1}º</span>
                     <span className="truncate font-semibold">{rows[index]?.name || "—"}</span>
                     {cells.map((cell, cellIndex) => (

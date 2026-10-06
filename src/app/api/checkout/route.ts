@@ -14,6 +14,7 @@ export async function POST(request: Request) {
       userId: user.id,
       email: user.email,
       name: user.name,
+      discordId: user.discordId,
       targetId: parsed.data.targetId,
       items: parsed.data.items
     });

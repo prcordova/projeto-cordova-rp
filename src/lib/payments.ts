@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { cityBlipTypes, cityIdentity, cityOrgs } from "./city";
 import { getDb } from "./db";
 import { defaultProducts } from "./catalog";
 import { findProduct } from "./catalog-server";
@@ -25,6 +26,7 @@ export async function createCheckout(input: {
   userId: string;
   email: string;
   name: string;
+  discordId?: string | null;
   targetId: number;
   items: { id: string; qty: number }[];
 }) {
@@ -34,10 +36,33 @@ export async function createCheckout(input: {
   if (!base) return { ok: false as const, message: "Defina NEXT_PUBLIC_SITE_URL com o endereço HTTPS da Vercel." };
 
   const lines: OrderLine[] = [];
+  let needsPassport = false;
+  let needsOwner = false;
+  let blipTypes: Awaited<ReturnType<typeof cityBlipTypes>> | undefined;
+  let orgs: Awaited<ReturnType<typeof cityOrgs>> | undefined;
   for (const item of input.items) {
     const product = await findProduct(item.id);
+    if (!product || product.category === "organizacao") {
+      if (blipTypes === undefined) blipTypes = await cityBlipTypes();
+      const blip = blipTypes?.find((type) => type.id === item.id);
+      if (blip) {
+        if (!(blip.price > 0)) return { ok: false as const, message: "Esse blip ainda não tem preço em reais." };
+        lines.push({
+          id: blip.id,
+          name: blip.label,
+          category: "organizacao",
+          qty: item.qty,
+          price: blip.price,
+          action: "blipcredit",
+          actionParams: { type: blip.id }
+        });
+        needsOwner = true;
+        continue;
+      }
+      if (!product && blipTypes === null) return { ok: false as const, message: "A cidade não respondeu. Tente de novo." };
+    }
     if (!product || !product.sellOnline || product.price === null) return { ok: false as const, message: "Item inválido." };
-    lines.push({
+    const line: OrderLine = {
       id: product.id,
       name: product.name,
       category: product.category,
@@ -47,7 +72,31 @@ export async function createCheckout(input: {
       price: product.price,
       action: product.source === "db" && !configIds.has(product.id) ? product.action : undefined,
       actionParams: product.source === "db" && !configIds.has(product.id) ? product.actionParams : undefined
-    });
+    };
+    if (product.category === "organizacao" && (!product.placeKind || product.placeKind === "faccao")) {
+      if (orgs === undefined) orgs = await cityOrgs();
+      if (!orgs) return { ok: false as const, message: "A cidade não respondeu. Tente de novo." };
+      const org = orgs.find((entry) => entry.id.toLocaleLowerCase("pt-BR") === product.id.toLocaleLowerCase("pt-BR") || entry.name.toLocaleLowerCase("pt-BR") === product.name.toLocaleLowerCase("pt-BR"));
+      if (!org) return { ok: false as const, message: "Essa organização não está na cidade." };
+      line.action = "orgowner";
+      line.actionParams = { org: org.id };
+      needsPassport = true;
+    }
+    lines.push(line);
+  }
+  if (needsPassport || needsOwner) {
+    if (needsPassport) {
+      const mine = input.discordId ? await cityIdentity({ discord: input.discordId }) : { state: "missing" as const };
+      if (mine.state === "offline") return { ok: false as const, message: "A cidade não respondeu. Tente de novo." };
+      if (mine.state !== "ok") return { ok: false as const, message: "Sua conta Discord não está ligada a um passaporte. Entre na cidade com o Discord vinculado." };
+      if (input.targetId !== mine.identity.userId) return { ok: false as const, message: "Organização e facção só podem ser compradas no seu próprio passaporte." };
+    }
+    if (needsOwner) {
+      const destination = await cityIdentity({ user: input.targetId });
+      if (destination.state === "offline") return { ok: false as const, message: "A cidade não respondeu. Tente de novo." };
+      if (destination.state !== "ok") return { ok: false as const, message: "Passaporte não encontrado." };
+      if (!destination.identity.orgs.length) return { ok: false as const, message: "O passaporte que recebe o blip precisa ser dono de uma organização." };
+    }
   }
   const total = Math.round(lines.reduce((sum, line) => sum + line.price * line.qty, 0) * 100) / 100;
   const db = await getDb();

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
-import { availabilityOptions, formatCrp, placeKinds, type Availability, type Product } from "@/lib/catalog";
+import { availabilityOptions, formatCrp, placeKinds, type Availability, type PlaceKind, type Product } from "@/lib/catalog";
 import type { RankEntry } from "@/lib/rankings";
 import { useCart } from "@/store/cart";
 
@@ -30,6 +30,7 @@ function sameOrg(product: Product, name: string) {
 export function OrgBrowser() {
   const add = useCart((state) => state.add);
   const [products, setProducts] = useState<Product[]>([]);
+  const [blips, setBlips] = useState<Product[]>([]);
   const [factions, setFactions] = useState<RankEntry[]>([]);
   const [rankDown, setRankDown] = useState(false);
   const [ready, setReady] = useState(false);
@@ -39,6 +40,32 @@ export function OrgBrowser() {
 
   useEffect(() => {
     let cancel = false;
+    fetch("/api/blips")
+      .then((response) => response.json())
+      .then((data) => {
+        if (cancel || !Array.isArray(data.types)) return;
+        setBlips(data.types.flatMap((type: { id: string; label: string; price: number | string }) => {
+          const price = Number(type.price);
+          const kind = placeKinds.some((item) => item.id === type.id) ? type.id as PlaceKind : "outro";
+          const product: Product = {
+            id: type.id,
+            name: type.label || type.id,
+            category: "organizacao",
+            price: Number.isFinite(price) ? price : null,
+            crpPrice: null,
+            image: "/imagens/organizacoes.png",
+            description: "Ponto da organização. Quem recebe precisa ser dono. Depois do pagamento, use /resgatartoken na cidade.",
+            benefits: [],
+            placeKind: kind,
+            location: "Na cidade",
+            availability: "venda",
+            sellOnline: price > 0,
+            source: "config"
+          };
+          return [product];
+        }));
+      })
+      .catch(() => undefined);
     fetch("/api/store")
       .then((response) => response.json())
       .then((data) => {
@@ -79,7 +106,7 @@ export function OrgBrowser() {
         price: overlay?.price ?? null,
         crpPrice: overlay?.crpPrice ?? null,
         image: overlay?.image || "/imagens/organizacoes.png",
-        description: overlay?.description || "Organização da cidade. A venda fecha quando alguém está como dono, líder, chefe ou diretor.",
+        description: overlay?.description || "Organização da cidade. A venda fecha quando alguém está no cargo de dono.",
         benefits: overlay?.benefits || [],
         placeKind: "faccao",
         location: overlay?.location || "Na cidade",
@@ -90,9 +117,10 @@ export function OrgBrowser() {
       };
       return [product];
     });
-    const rest = products.filter((item) => item.category === "organizacao" && !used.has(item.id) && !fromGame.some((org) => sameOrg(item, org.name)));
-    return [...fromGame, ...rest];
-  }, [products, factions]);
+    const rest = products.filter((item) => item.category === "organizacao" && (!item.placeKind || item.placeKind === "faccao") && !used.has(item.id) && !fromGame.some((org) => sameOrg(item, org.name)));
+    const points = blips.filter((item) => !fromGame.some((org) => org.id === item.id) && !rest.some((org) => org.id === item.id));
+    return [...fromGame, ...rest, ...points];
+  }, [products, factions, blips]);
 
   const visible = useMemo(() => {
     const term = query.trim().toLocaleLowerCase("pt-BR");
