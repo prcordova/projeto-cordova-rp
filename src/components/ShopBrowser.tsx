@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Modal } from "@/components/Modal";
 import { ProductCard } from "@/components/ProductCard";
 import { ShopSelect } from "@/components/ShopSelect";
-import type { Product, ShopCategory } from "@/lib/catalog";
+import { formatBrl, formatCrp, offerDuration, type Product, type ShopCategory } from "@/lib/catalog";
+import { useCart } from "@/store/cart";
 
 const tabs: { id: "all" | ShopCategory; label: string }[] = [
   { id: "all", label: "Todos" },
@@ -31,10 +33,13 @@ function itemPrice(product: Product) {
 }
 
 export function ShopBrowser({ initialProducts }: { initialProducts: Product[] }) {
+  const add = useCart((state) => state.add);
   const [products, setProducts] = useState(initialProducts);
   const [category, setCategory] = useState<(typeof tabs)[number]["id"]>("all");
   const [sort, setSort] = useState("bestsellers");
   const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState<Product | null>(null);
+  const closeDetails = useCallback(() => setSelected(null), []);
 
   useEffect(() => {
     let cancel = false;
@@ -105,11 +110,62 @@ export function ShopBrowser({ initialProducts }: { initialProducts: Product[] })
       </div>
       {visible.length ? (
         <div className="grid items-stretch gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {visible.map((product) => <ProductCard key={product.id} product={product} />)}
+          {visible.map((product) => {
+            const price = product.sellOnline && product.price !== null ? formatBrl(product.price) : product.crpPrice ? formatCrp(product.crpPrice) : "";
+            return (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onToggle={() => setSelected(product)}
+                footer={
+                  <div className="space-y-2">
+                    <button type="button" className="w-full rounded-xl border border-yellow-400/40 px-4 py-2 text-sm font-bold text-yellow-400" onClick={() => setSelected(product)}>Ver detalhes</button>
+                    {product.sellOnline && product.price !== null ? (
+                      <button
+                        type="button"
+                        className="w-full rounded-xl border border-yellow-400 bg-black px-4 py-3 font-bold text-yellow-400"
+                        onClick={() => add({ id: product.id, name: product.name, price: product.price || 0, image: product.image, description: product.description, duration: offerDuration(product) })}
+                      >
+                        Adicionar ao carrinho
+                      </button>
+                    ) : (
+                      <p className="flex min-h-12 items-center justify-center rounded-xl border border-yellow-400/30 px-3 text-center text-sm font-semibold text-yellow-400">{price ? `Na vipshop por ${price}` : "Comprado na vipshop, com CRP."}</p>
+                    )}
+                  </div>
+                }
+              />
+            );
+          })}
         </div>
       ) : (
         <p className="rounded-2xl border border-yellow-400/30 bg-black p-5 text-white/70">Nenhum produto nesta aba.</p>
       )}
+      {selected ? <ProductDetails product={selected} onClose={closeDetails} /> : null}
     </div>
+  );
+}
+
+function ProductDetails({ product, onClose }: { product: Product; onClose: () => void }) {
+  const price = product.sellOnline && product.price !== null ? formatBrl(product.price) : product.crpPrice ? formatCrp(product.crpPrice) : "";
+  return (
+    <Modal title={product.name} onClose={onClose} wide>
+      <div className="space-y-4 text-sm leading-relaxed text-white/85">
+        {price ? <p className="font-bold text-yellow-400">{price}</p> : null}
+        <section>
+          <h3 className="mb-1 font-extrabold text-yellow-400">Descrição</h3>
+          <p>{product.description}</p>
+        </section>
+        {product.benefits.length ? (
+          <section>
+            <h3 className="mb-1 font-extrabold text-yellow-400">O que inclui</h3>
+            <ul className="list-disc space-y-1 pl-5">{product.benefits.map((line) => <li key={line}>{line}</li>)}</ul>
+          </section>
+        ) : null}
+        <section>
+          <h3 className="mb-1 font-extrabold text-yellow-400">Prazo</h3>
+          <p>{offerDuration(product)}</p>
+        </section>
+      </div>
+    </Modal>
   );
 }

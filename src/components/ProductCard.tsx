@@ -68,20 +68,20 @@ export function ProductCard({
       <header className="relative h-44 shrink-0">
         <img src={product.image} alt="" className="h-full w-full object-cover" />
         {badge ? <span className={`absolute left-4 top-4 rounded-lg px-2 py-1 text-xs font-bold ${accent === "alert" ? "bg-red-600 text-white" : "bg-yellow-400 text-black"}`}>{badge}</span> : null}
-        {menu ? <div className="absolute right-4 top-4">{menu}</div> : null}
+        {menu ? <div className="absolute right-4 top-4" onClick={(event) => event.stopPropagation()}>{menu}</div> : null}
       </header>
       <main className="flex min-h-0 flex-1 flex-col gap-2 px-3 pt-3">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="min-w-0 truncate text-base font-extrabold [overflow-wrap:anywhere]">{product.name}</h2>
+          <h2 className="min-w-0 truncate text-base font-extrabold">{product.name}</h2>
           <strong className="max-w-[40%] shrink-0 truncate text-sm text-yellow-400">{price}</strong>
         </div>
-        <p className="line-clamp-3 min-h-[3.9rem] break-words text-sm leading-snug text-white/75 [overflow-wrap:anywhere]">{product.description}</p>
+        <p className="line-clamp-2 min-h-[2.6rem] text-sm leading-snug text-white/75">{product.description}</p>
         <ul className="min-h-[4.5rem] space-y-1 text-sm text-white/80">
-          {product.benefits.slice(0, 3).map((benefit) => <li key={benefit} className="truncate [overflow-wrap:anywhere]">• {benefit}</li>)}
+          {product.benefits.slice(0, 3).map((benefit) => <li key={benefit} className="truncate">• {benefit}</li>)}
         </ul>
         {expanded && details ? <div className="space-y-1 border-t border-white/10 pt-2 text-sm text-white/80">{details}</div> : null}
       </main>
-      <footer className="mt-auto p-3 pt-2">
+      <footer className="mt-auto p-3 pt-2" onClick={(event) => event.stopPropagation()}>
         {footer ?? (product.sellOnline && product.price !== null ? (
           <button
             type="button"
