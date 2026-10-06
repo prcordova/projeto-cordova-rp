@@ -1,8 +1,10 @@
 import { ObjectId } from "mongodb";
-import { cityBlipTypes, cityIdentity, cityOrgs } from "./city";
+import { cityBlipTypes, cityIdentity } from "./city";
+import { orgSalePrice } from "./catalog";
 import { getDb } from "./db";
 import { defaultProducts } from "./catalog";
 import { findProduct } from "./catalog-server";
+import { loadOrgs } from "./rankings";
 
 const configIds = new Set(defaultProducts.map((item) => item.id));
 
@@ -20,6 +22,9 @@ type OrderLine = {
   price: number;
   action?: string;
   actionParams?: Record<string, unknown>;
+  image?: string;
+  description?: string;
+  benefits?: string[];
 };
 
 export async function createCheckout(input: {
@@ -35,11 +40,15 @@ export async function createCheckout(input: {
   if (!token) return { ok: false as const, message: "Mercado Pago ainda não está configurado." };
   if (!base) return { ok: false as const, message: "Defina NEXT_PUBLIC_SITE_URL com o endereço HTTPS da Vercel." };
 
+  const holder = await cityIdentity({ user: input.targetId });
+  if (holder.state === "offline") return { ok: false as const, message: "A cidade não respondeu. O ID só pode ser conferido com o servidor no ar." };
+  if (holder.state !== "ok") return { ok: false as const, message: "Esse passaporte não existe na cidade. Confira o ID antes de pagar." };
+
   const lines: OrderLine[] = [];
   let needsPassport = false;
   let needsOwner = false;
   let blipTypes: Awaited<ReturnType<typeof cityBlipTypes>> | undefined;
-  let orgs: Awaited<ReturnType<typeof cityOrgs>> | undefined;
+  let orgs: Awaited<ReturnType<typeof loadOrgs>> | undefined;
   for (const item of input.items) {
     const product = await findProduct(item.id);
     if (!product || product.category === "organizacao") {
@@ -54,12 +63,48 @@ export async function createCheckout(input: {
           qty: item.qty,
           price: blip.price,
           action: "blipcredit",
-          actionParams: { type: blip.id }
+          actionParams: { type: blip.id },
+          image: "/imagens/loja.png",
+          description: `Crédito de blip ${blip.label}. A ficha pede ticket no Discord ou um serviço na cidade.`,
+          benefits: ["Crédito de blip", "PIX ou cartão"]
         });
         needsOwner = true;
         continue;
       }
-      if (!product && blipTypes === null) return { ok: false as const, message: "A cidade não respondeu. Tente de novo." };
+    }
+    const faction = !product || (product.category === "organizacao" && (!product.placeKind || product.placeKind === "faccao"));
+    if (faction) {
+      if (orgs === undefined) orgs = await loadOrgs();
+      const key = (value: string) => value.toLocaleLowerCase("pt-BR");
+      const org = orgs?.find((entry) => {
+        const name = entry.name || "";
+        if (!name) return false;
+        return key(name) === key(item.id) || Boolean(product && (key(name) === key(product.id) || key(name) === key(product.name)));
+      });
+      if (!org?.name) {
+        if (!product) {
+          if (!orgs) return { ok: false as const, message: "A cidade não respondeu. Tente de novo." };
+          return { ok: false as const, message: "Item inválido." };
+        }
+        if (!orgs) return { ok: false as const, message: "A cidade não respondeu. Tente de novo." };
+        return { ok: false as const, message: "Essa organização não está na cidade." };
+      }
+      if (org.owner || org.sub) return { ok: false as const, message: "Essa organização já tem dono. A venda é única." };
+      if (item.qty !== 1) return { ok: false as const, message: "Cada organização é venda única." };
+      lines.push({
+        id: org.name,
+        name: org.name,
+        category: "organizacao",
+        qty: 1,
+        price: orgSalePrice,
+        action: "orgowner",
+        actionParams: { org: org.name, term: "season" },
+        image: "/imagens/organizacoes.png",
+        description: "Venda única por R$ 1.000,00. O cargo de dono vale até o final da season.",
+        benefits: ["Venda única", "Até o final da season"]
+      });
+      needsPassport = true;
+      continue;
     }
     if (!product || !product.sellOnline || product.price === null) return { ok: false as const, message: "Item inválido." };
     const line: OrderLine = {
@@ -71,17 +116,11 @@ export async function createCheckout(input: {
       qty: item.qty,
       price: product.price,
       action: product.source === "db" && !configIds.has(product.id) ? product.action : undefined,
-      actionParams: product.source === "db" && !configIds.has(product.id) ? product.actionParams : undefined
+      actionParams: product.source === "db" && !configIds.has(product.id) ? product.actionParams : undefined,
+      image: product.image,
+      description: product.description,
+      benefits: product.benefits.slice(0, 6)
     };
-    if (product.category === "organizacao" && (!product.placeKind || product.placeKind === "faccao")) {
-      if (orgs === undefined) orgs = await cityOrgs();
-      if (!orgs) return { ok: false as const, message: "A cidade não respondeu. Tente de novo." };
-      const org = orgs.find((entry) => entry.id.toLocaleLowerCase("pt-BR") === product.id.toLocaleLowerCase("pt-BR") || entry.name.toLocaleLowerCase("pt-BR") === product.name.toLocaleLowerCase("pt-BR"));
-      if (!org) return { ok: false as const, message: "Essa organização não está na cidade." };
-      line.action = "orgowner";
-      line.actionParams = { org: org.id };
-      needsPassport = true;
-    }
     lines.push(line);
   }
   if (needsPassport || needsOwner) {
@@ -91,11 +130,8 @@ export async function createCheckout(input: {
       if (mine.state !== "ok") return { ok: false as const, message: "Sua conta Discord não está ligada a um passaporte. Entre na cidade com o Discord vinculado." };
       if (input.targetId !== mine.identity.userId) return { ok: false as const, message: "Organização e facção só podem ser compradas no seu próprio passaporte." };
     }
-    if (needsOwner) {
-      const destination = await cityIdentity({ user: input.targetId });
-      if (destination.state === "offline") return { ok: false as const, message: "A cidade não respondeu. Tente de novo." };
-      if (destination.state !== "ok") return { ok: false as const, message: "Passaporte não encontrado." };
-      if (!destination.identity.orgs.length) return { ok: false as const, message: "O passaporte que recebe o blip precisa ser dono de uma organização." };
+    if (needsOwner && !holder.identity.orgs.length) {
+      return { ok: false as const, message: "O passaporte que recebe o blip precisa ser dono de uma organização." };
     }
   }
   const total = Math.round(lines.reduce((sum, line) => sum + line.price * line.qty, 0) * 100) / 100;
@@ -105,6 +141,7 @@ export async function createCheckout(input: {
     email: input.email,
     name: input.name,
     targetId: input.targetId,
+    targetName: holder.identity.name || `Passaporte ${input.targetId}`,
     lines,
     total,
     status: "pending",

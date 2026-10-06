@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { AdminPanel } from "@/components/AdminPanel";
 import { BlipPrices } from "@/components/BlipPrices";
+import { MaintenanceForm } from "@/components/MaintenanceForm";
 import { NewsPanel } from "@/components/NewsPanel";
 
 export function AdminDesk({ products, posts }: { products: boolean; posts: boolean }) {
   const [tab, setTab] = useState(products ? "loja" : "noticias");
-  const button = (id: "loja" | "noticias" | "outros", label: string) => (
+  const button = (id: "loja" | "noticias" | "outros" | "cidade", label: string) => (
     <button
       type="button"
       className={`rounded-xl border px-4 py-2 text-sm font-bold ${tab === id ? "border-yellow-400 bg-yellow-400 text-black" : "border-yellow-400/40 text-white"}`}
@@ -21,6 +22,7 @@ export function AdminDesk({ products, posts }: { products: boolean; posts: boole
       <div className="flex flex-wrap gap-2">
         {products ? button("loja", "Loja") : null}
         {products ? button("outros", "Outros") : null}
+        {products ? button("cidade", "Cidade") : null}
         {posts ? button("noticias", "Notícias") : null}
       </div>
       {tab === "loja" && products ? (
@@ -39,6 +41,15 @@ export function AdminDesk({ products, posts }: { products: boolean; posts: boole
             <p className="max-w-3xl text-white/70">Preço em reais de cada tipo de blip. A loja do site e a loja do jogo leem a mesma tabela.</p>
           </div>
           <BlipPrices />
+        </section>
+      ) : null}
+      {tab === "cidade" && products ? (
+        <section className="space-y-4">
+          <div>
+            <h1 className="text-3xl font-extrabold">Cidade</h1>
+            <p className="max-w-3xl text-white/70">A manutenção aparece na página inicial, abaixo do status. Diária vale todo dia. Um dia some depois do horário de retorno.</p>
+          </div>
+          <MaintenanceForm />
         </section>
       ) : null}
       {tab === "noticias" && posts ? (

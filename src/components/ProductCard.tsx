@@ -11,13 +11,21 @@ export function ProductCard({
   menu,
   footer,
   badge,
-  priceLabel
+  priceLabel,
+  accent = "default",
+  expanded = false,
+  onToggle,
+  details
 }: {
   product: Product;
   menu?: ReactNode;
   footer?: ReactNode;
   badge?: string;
   priceLabel?: string;
+  accent?: "default" | "alert";
+  expanded?: boolean;
+  onToggle?: () => void;
+  details?: ReactNode;
 }) {
   const add = useCart((state) => state.add);
   const card = useRef<HTMLElement>(null);
@@ -44,12 +52,22 @@ export function ProductCard({
       ref={card}
       onMouseMove={move}
       onMouseLeave={leave}
-      className={`relative flex h-[31rem] min-w-0 flex-col overflow-hidden rounded-2xl border border-yellow-400/35 bg-[#1b1b1b] ${moving ? "z-10" : ""}`}
+      onClick={onToggle}
+      onKeyDown={onToggle ? (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onToggle();
+        }
+      } : undefined}
+      role={onToggle ? "button" : undefined}
+      tabIndex={onToggle ? 0 : undefined}
+      aria-expanded={onToggle ? expanded : undefined}
+      className={`relative flex min-w-0 flex-col rounded-2xl bg-[#1b1b1b] ${expanded ? "h-auto overflow-visible" : "h-[31rem] overflow-hidden"} ${accent === "alert" ? "border-2 border-red-500" : "border border-yellow-400/35"} ${onToggle ? "cursor-pointer" : ""} ${moving ? "z-10" : ""}`}
       style={{ transform: tilt, transition: moving ? "none" : "transform 0.4s ease", transformStyle: "preserve-3d" }}
     >
       <header className="relative h-44 shrink-0">
         <img src={product.image} alt="" className="h-full w-full object-cover" />
-        {badge ? <span className="absolute left-4 top-4 rounded-lg bg-yellow-400 px-2 py-1 text-xs font-bold text-black">{badge}</span> : null}
+        {badge ? <span className={`absolute left-4 top-4 rounded-lg px-2 py-1 text-xs font-bold ${accent === "alert" ? "bg-red-600 text-white" : "bg-yellow-400 text-black"}`}>{badge}</span> : null}
         {menu ? <div className="absolute right-4 top-4">{menu}</div> : null}
       </header>
       <main className="flex min-h-0 flex-1 flex-col gap-2 px-3 pt-3">
@@ -61,6 +79,7 @@ export function ProductCard({
         <ul className="min-h-[4.5rem] space-y-1 text-sm text-white/80">
           {product.benefits.slice(0, 3).map((benefit) => <li key={benefit} className="truncate [overflow-wrap:anywhere]">• {benefit}</li>)}
         </ul>
+        {expanded && details ? <div className="space-y-1 border-t border-white/10 pt-2 text-sm text-white/80">{details}</div> : null}
       </main>
       <footer className="mt-auto p-3 pt-2">
         {footer ?? (product.sellOnline && product.price !== null ? (

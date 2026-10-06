@@ -21,6 +21,7 @@ export function Header() {
   const [account, setAccount] = useState<Account | null>(null);
   const [accountMenu, setAccountMenu] = useState(false);
   const accountRoot = useRef<HTMLDivElement>(null);
+  const wideAccount = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/auth/me").then((response) => response.json()).then((data) => {
@@ -34,7 +35,9 @@ export function Header() {
 
   useEffect(() => {
     function close(event: MouseEvent) {
-      if (!accountRoot.current?.contains(event.target as Node)) setAccountMenu(false);
+      const target = event.target as Node;
+      if (accountRoot.current?.contains(target) || wideAccount.current?.contains(target)) return;
+      setAccountMenu(false);
     }
     document.addEventListener("click", close);
     return () => document.removeEventListener("click", close);
@@ -48,12 +51,17 @@ export function Header() {
     form.submit();
   }
 
+  const brand = (
+    <Link href="/" className="shrink-0 text-lg font-extrabold tracking-wide text-yellow-400" aria-label="Início" onClick={() => setAccountMenu(false)}>CORDOVA RP</Link>
+  );
+  const navigation = links.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>);
+
   return (
     <header className="sticky top-0 z-50 border-b border-yellow-400/30 bg-black/90 backdrop-blur">
-      <div className="relative mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
-        <Link href="/" className="shrink-0 text-lg font-extrabold tracking-wide text-yellow-400" aria-label="Início" onClick={() => setAccountMenu(false)}>CORDOVA RP</Link>
+      <div className="relative mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 min-[1560px]:hidden">
+        {brand}
         <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-5 text-sm font-semibold md:flex">
-          {links.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
+          {navigation}
         </nav>
         <div className="ml-auto flex items-center gap-3">
         <button type="button" className="relative rounded-lg border border-yellow-400/50 p-1" aria-label="Abrir carrinho" onClick={() => setOpen(true)}>
@@ -108,6 +116,9 @@ export function Header() {
                 <>
                   <li className="mx-2 my-1 border-t border-yellow-400/30 md:hidden" role="separator" />
                   <li>
+                    <Link href="/minhas-compras" role="menuitem" className={itemClass} onClick={() => setAccountMenu(false)}>Minhas compras</Link>
+                  </li>
+                  <li>
                     <Link href="/conta" role="menuitem" className={itemClass} onClick={() => setAccountMenu(false)}>Conta</Link>
                   </li>
                   {account.admin || account.posts ? (
@@ -127,6 +138,52 @@ export function Header() {
             </ul>
           ) : null}
         </div>
+        </div>
+      </div>
+      <div className="hidden min-[1560px]:grid min-[1560px]:grid-cols-[minmax(0,1fr)_minmax(0,72rem)_minmax(0,1fr)] min-[1560px]:items-center min-[1560px]:py-3">
+        <div className="flex justify-center px-4">{brand}</div>
+        <nav className="flex items-center justify-center gap-5 px-4 text-sm font-semibold">{navigation}</nav>
+        <div className="flex justify-center px-4">
+          <div className="flex items-center gap-3">
+            <button type="button" className="relative rounded-lg border border-yellow-400/50 p-1" aria-label="Abrir carrinho" onClick={() => setOpen(true)}>
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M6 6h15l-1.5 9h-12z" />
+                <path d="M6 6 5 3H2" />
+                <circle cx="9" cy="20" r="1" />
+                <circle cx="18" cy="20" r="1" />
+              </svg>
+              <span className="absolute -right-1.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-yellow-400 px-0.5 text-[10px] font-bold leading-none text-black">{count}</span>
+            </button>
+            <div ref={wideAccount} className="relative">
+              {account ? (
+                <button
+                  type="button"
+                  className="flex items-center gap-2 text-sm font-semibold text-yellow-400"
+                  aria-haspopup="menu"
+                  aria-expanded={accountMenu}
+                  aria-label="Abrir menu da conta"
+                  onClick={() => setAccountMenu((open) => !open)}
+                >
+                  <span className="max-w-32 truncate">{account.name}</span>
+                  {account.avatar ? (
+                    <img src={account.avatar} alt="" className="h-8 w-8 rounded-full object-cover" />
+                  ) : (
+                    <span className="grid h-8 w-8 place-items-center rounded-full bg-yellow-400 text-xs font-bold text-black">{account.name.slice(0, 1).toUpperCase()}</span>
+                  )}
+                </button>
+              ) : (
+                <Link href="/entrar" className="text-sm font-semibold text-yellow-400">Entrar</Link>
+              )}
+              {accountMenu && account ? (
+                <ul className="absolute right-0 z-40 mt-2 min-w-44 rounded-xl border border-yellow-400/50 bg-[#141414] p-1 shadow-xl" role="menu">
+                  <li><Link href="/minhas-compras" role="menuitem" className={itemClass} onClick={() => setAccountMenu(false)}>Minhas compras</Link></li>
+                  <li><Link href="/conta" role="menuitem" className={itemClass} onClick={() => setAccountMenu(false)}>Conta</Link></li>
+                  {account.admin || account.posts ? <li><Link href="/admin" role="menuitem" className={itemClass} onClick={() => setAccountMenu(false)}>Painel</Link></li> : null}
+                  <li><button type="button" role="menuitem" className={itemClass} onClick={logout}>Sair</button></li>
+                </ul>
+              ) : null}
+            </div>
+          </div>
         </div>
       </div>
     </header>

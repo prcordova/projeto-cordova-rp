@@ -1,9 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatBrl } from "@/lib/products";
+import { storeTermPoints } from "@/lib/store-terms";
 import { useCart } from "@/store/cart";
+
+type PassportState =
+  | { state: "empty" }
+  | { state: "checking" }
+  | { state: "found"; name: string }
+  | { state: "missing"; message: string }
+  | { state: "offline"; message: string };
+
+async function lookupPassport(id: string): Promise<PassportState> {
+  const response = await fetch(`/api/passport?id=${id}`);
+  const data = await response.json().catch(() => ({}));
+  if (data.exists && data.name) return { state: "found", name: String(data.name) };
+  if (data.ok === false) return { state: "offline", message: String(data.message || "A cidade não respondeu.") };
+  return { state: "missing", message: String(data.message || "Esse passaporte não existe na cidade.") };
+}
 
 export function CartDrawer() {
   const router = useRouter();
@@ -16,7 +33,26 @@ export function CartDrawer() {
   const setTargetId = useCart((state) => state.setTargetId);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [accepted, setAccepted] = useState(false);
+  const [passport, setPassport] = useState<PassportState>({ state: "empty" });
   const total = lines.reduce((sum, line) => sum + line.price * line.qty, 0);
+
+  useEffect(() => {
+    if (!/^\d+$/.test(targetId)) {
+      setPassport({ state: "empty" });
+      return;
+    }
+    const id = targetId;
+    setPassport({ state: "checking" });
+    const timer = window.setTimeout(() => {
+      lookupPassport(id).then((found) => {
+        if (useCart.getState().targetId === id) setPassport(found);
+      }).catch(() => {
+        if (useCart.getState().targetId === id) setPassport({ state: "offline", message: "A cidade não respondeu." });
+      });
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [targetId]);
 
   async function pay() {
     if (!lines.length) return;
@@ -24,13 +60,25 @@ export function CartDrawer() {
       setMessage("Informe o ID do jogador na cidade.");
       return;
     }
+    if (!accepted) {
+      setMessage("Aceite os termos da loja para finalizar a compra.");
+      return;
+    }
     setLoading(true);
     setMessage("");
+    const holder = await lookupPassport(targetId).catch(() => ({ state: "offline" as const, message: "A cidade não respondeu." }));
+    setPassport(holder);
+    if (holder.state !== "found") {
+      setLoading(false);
+      setMessage(holder.state === "missing" || holder.state === "offline" ? holder.message : "Informe o ID do jogador na cidade.");
+      return;
+    }
     const response = await fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         targetId: Number(targetId),
+        acceptedTerms: true,
         items: lines.map((line) => ({ id: line.id, qty: line.qty }))
       })
     });
@@ -52,6 +100,14 @@ export function CartDrawer() {
   }
 
   if (!open) return null;
+
+  const passportText = passport.state === "checking"
+    ? "Conferindo o passaporte na cidade..."
+    : passport.state === "found"
+      ? `Entrega para ${passport.name}.`
+      : passport.state === "missing" || passport.state === "offline"
+        ? passport.message
+        : "Digite o passaporte e confira o nome antes de pagar.";
 
   return (
     <>
@@ -87,11 +143,18 @@ export function CartDrawer() {
               onChange={(event) => setTargetId(event.target.value.replace(/\D/g, ""))}
             />
           </label>
-          <button type="button" disabled={loading || !lines.length} className="w-full rounded-xl bg-yellow-400 px-4 py-3 font-bold text-black disabled:opacity-60" onClick={pay}>
-            {loading ? "Abrindo Mercado Pago..." : "Finalizar compra"}
+          <p className={`text-sm ${passport.state === "found" ? "text-emerald-300" : passport.state === "missing" || passport.state === "offline" ? "text-red-300" : "text-white/60"}`}>{passportText}</p>
+          <div className="max-h-28 space-y-1 overflow-y-auto text-xs text-white/70">
+            {storeTermPoints.map((point) => <p key={point}>{point}</p>)}
+          </div>
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" className="mt-1" checked={accepted} onChange={(event) => setAccepted(event.target.checked)} />
+            <span>Li e aceito os <Link href="/termos" className="font-semibold text-yellow-400" onClick={() => setOpen(false)}>termos da loja</Link>.</span>
+          </label>
+          <button type="button" disabled={loading || !lines.length || !accepted} className="w-full rounded-xl bg-yellow-400 px-4 py-3 font-bold text-black disabled:opacity-60" onClick={pay}>
+            {loading ? "Conferindo ID..." : "Finalizar compra"}
           </button>
           {message ? <p className="text-sm text-yellow-200">{message}</p> : null}
-          <p className="text-xs text-white/60">O pagamento abre no Mercado Pago. Depois da confirmação, o servidor entrega o produto neste ID.</p>
         </div>
       </aside>
     </>

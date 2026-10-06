@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CityStatus } from "@/components/CityStatus";
 import { DISCORD_INVITE, FIVEM_CONNECT, FIVEM_JOIN } from "@/lib/connect";
 
 const cards = [
@@ -15,14 +16,21 @@ export default function HomePage() {
   return (
     <div className="space-y-8">
       <section className="rounded-2xl border border-yellow-400/40 bg-black p-6 sm:p-10">
+        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-start lg:gap-8">
+        <div className="order-2 lg:order-1">
         <p className="text-sm font-bold tracking-widest text-yellow-400">CIDADE CORDOVA RP</p>
         <h1 className="mt-3 max-w-4xl text-3xl font-extrabold leading-tight sm:text-5xl lg:text-6xl">Uma cidade de roleplay, com economia, facções e vida própria.</h1>
         <p className="mt-5 max-w-3xl text-lg text-white/75">
           Cordova RP roda no FiveM. A whitelist abre no Discord, a conexão entra direto no servidor e a loja deste site cobra no Mercado Pago. Quando o pagamento confirma, o produto cai no passaporte informado no carrinho.
         </p>
-        <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
+        <div className="mt-6 flex flex-wrap items-center gap-3">
           <a href={FIVEM_CONNECT} className="rounded-xl bg-yellow-400 px-4 py-3 text-center font-bold text-black">Conectar {FIVEM_JOIN}</a>
           <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className="rounded-xl border border-yellow-400 px-4 py-3 text-center font-bold text-yellow-400">Discord</a>
+        </div>
+        </div>
+        <div className="order-1 lg:order-2">
+          <CityStatus />
+        </div>
         </div>
       </section>
       <section className="flex flex-col gap-4">

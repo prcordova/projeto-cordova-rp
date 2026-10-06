@@ -7,6 +7,7 @@ const links = [
   { href: "/organizacoes", label: "Organizações" },
   { href: "/ranking", label: "Ranking" },
   { href: "/sobre", label: "Sobre" },
+  { href: "/termos", label: "Termos" },
   { href: "/suporte", label: "Suporte" },
   { href: "/carrinho", label: "Carrinho" }
 ];

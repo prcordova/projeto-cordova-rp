@@ -9,6 +9,7 @@ export async function POST(request: Request) {
   if (!user.emailVerified) return NextResponse.json({ ok: false, message: "Confirme o e-mail antes de comprar." }, { status: 403 });
   const parsed = checkoutSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ ok: false, message: "Informe o passaporte e os itens do carrinho." }, { status: 400 });
+  if (!parsed.data.acceptedTerms) return NextResponse.json({ ok: false, message: "Aceite os termos da loja para finalizar a compra." }, { status: 400 });
   try {
     const result = await createCheckout({
       userId: user.id,

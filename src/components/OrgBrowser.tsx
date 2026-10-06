@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
-import { availabilityOptions, formatCrp, placeKinds, type Availability, type PlaceKind, type Product } from "@/lib/catalog";
+import { availabilityOptions, formatBrl, formatCrp, orgSalePrice, placeKinds, type Availability, type PlaceKind, type Product } from "@/lib/catalog";
 import type { RankEntry } from "@/lib/rankings";
 import { useCart } from "@/store/cart";
 
@@ -29,6 +29,7 @@ function sameOrg(product: Product, name: string) {
 
 export function OrgBrowser() {
   const add = useCart((state) => state.add);
+  const cartLines = useCart((state) => state.lines);
   const [products, setProducts] = useState<Product[]>([]);
   const [blips, setBlips] = useState<Product[]>([]);
   const [factions, setFactions] = useState<RankEntry[]>([]);
@@ -102,16 +103,16 @@ export function OrgBrowser() {
         id: overlay?.id || name,
         name: overlay?.name || name,
         category: "organizacao",
-        price: overlay?.price ?? null,
-        crpPrice: overlay?.crpPrice ?? null,
+        price: orgSalePrice,
+        crpPrice: null,
         image: overlay?.image || "/imagens/organizacoes.png",
-        description: overlay?.description || "Organização da cidade. A venda fecha quando alguém está no cargo de dono.",
-        benefits: overlay?.benefits || [],
+        description: "Venda única por R$ 1.000,00. O cargo de dono vale até o final da season.",
+        benefits: ["Venda única", "Até o final da season"],
         placeKind: "faccao",
         location: overlay?.location || "Na cidade",
-        availability: owner ? "dono" : overlay?.availability === "ocupada" || overlay?.availability === "dono" ? overlay.availability : "venda",
-        owner: owner || overlay?.owner,
-        sellOnline: Boolean(overlay?.sellOnline && !owner),
+        availability: owner ? "dono" : "venda",
+        owner: owner || undefined,
+        sellOnline: !owner,
         source: overlay?.source || "config"
       };
       return [product];
@@ -157,16 +158,24 @@ export function OrgBrowser() {
         <div className="grid items-stretch gap-4 md:grid-cols-2 lg:grid-cols-3">
           {visible.map((product) => {
             const availability = product.availability || "venda";
-            const lines = [product.location || "Sem localização", kindLabel(product), ...product.benefits].slice(0, 3);
+            const lines = product.placeKind === "faccao"
+              ? ["Venda única", "Até o final da season", product.location || "Na cidade"]
+              : [product.location || "Sem localização", kindLabel(product), ...product.benefits].slice(0, 3);
             const shown = { ...product, benefits: lines };
             const note = "flex min-h-12 items-center justify-center rounded-xl border border-yellow-400/30 px-3 text-center text-sm font-semibold text-yellow-400";
+            const inCart = cartLines.some((line) => line.id === product.id);
             let footer = <p className={note}>À venda{product.crpPrice ? ` por ${formatCrp(product.crpPrice)}` : ""}</p>;
             if (availability === "dono") footer = <p className={note}>Dono: {product.owner || "não informado"}</p>;
             else if (availability === "ocupada") footer = <p className={note}>Ocupada</p>;
             else if (product.sellOnline && product.price) {
               footer = (
-                <button type="button" className="w-full rounded-xl border border-yellow-400 bg-black px-4 py-3 font-bold text-yellow-400" onClick={() => add({ id: product.id, name: product.name, price: product.price || 0, image: product.image })}>
-                  Adicionar ao carrinho
+                <button
+                  type="button"
+                  className="w-full rounded-xl border border-yellow-400 bg-black px-4 py-3 font-bold text-yellow-400 disabled:opacity-60"
+                  disabled={inCart}
+                  onClick={() => add({ id: product.id, name: product.name, price: product.price || 0, image: product.image })}
+                >
+                  {inCart ? "No carrinho" : `Comprar ${formatBrl(product.price)}`}
                 </button>
               );
             }
@@ -175,7 +184,7 @@ export function OrgBrowser() {
                 key={product.id}
                 product={shown}
                 badge={statusLabel(product)}
-                priceLabel={product.crpPrice ? formatCrp(product.crpPrice) : undefined}
+                priceLabel={product.placeKind === "faccao" ? formatBrl(orgSalePrice) : product.crpPrice ? formatCrp(product.crpPrice) : undefined}
                 footer={footer}
               />
             );

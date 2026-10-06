@@ -72,6 +72,7 @@ export const postSchema = z.object({
 
 export const checkoutSchema = z.object({
   targetId: z.number().int().positive(),
+  acceptedTerms: z.boolean(),
   items: z.array(z.object({
     id: z.string().min(1),
     qty: z.number().int().min(1).max(5)
