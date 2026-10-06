@@ -72,12 +72,11 @@ export function OrgBrowser() {
         if (!cancel && Array.isArray(data.items)) setProducts(data.items.filter((item: Product) => item.category === "organizacao"));
       })
       .catch(() => undefined);
-    fetch("/api/rankings")
+    fetch("/api/orgs")
       .then((response) => response.json())
       .then((data) => {
         if (cancel) return;
-        const rows = data.payload?.factions;
-        if (Array.isArray(rows) && rows.length) setFactions(rows);
+        if (data.ok && Array.isArray(data.orgs)) setFactions(data.orgs);
         else setRankDown(true);
       })
       .catch(() => {
@@ -152,7 +151,7 @@ export function OrgBrowser() {
           ))}
         </div>
       </div>
-      {rankDown ? <p className="rounded-2xl border border-yellow-400/30 bg-black p-5 text-white/70">A cidade não devolveu a lista de organizações. Os blips cadastrados no painel continuam abaixo.</p> : null}
+      {rankDown ? <p className="rounded-2xl border border-yellow-400/30 bg-black p-5 text-white/70">A cidade não respondeu. A lista com todas as organizações, vaga ou dono, volta quando o servidor estiver no ar.</p> : null}
       {!ready ? <p className="rounded-2xl border border-yellow-400/30 bg-black p-5 text-white/70">Carregando organizações...</p> : null}
       {ready && visible.length ? (
         <div className="grid items-stretch gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -182,7 +181,7 @@ export function OrgBrowser() {
             );
           })}
         </div>
-      ) : ready ? (
+      ) : ready && !rankDown ? (
         <p className="rounded-2xl border border-yellow-400/30 bg-black p-5 text-white/70">Nenhuma organização ou blip neste filtro. No painel, a categoria Organização publica o card aqui.</p>
       ) : null}
     </div>

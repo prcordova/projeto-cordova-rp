@@ -44,9 +44,26 @@ export function rankingsUrl() {
   return process.env.GAME_RANKINGS_URL || `http://${SERVER_IP}:30120/esc_menu/rankings`;
 }
 
+export function orgsUrl() {
+  return process.env.GAME_ORGS_URL || rankingsUrl().replace(/\/rankings\/?$/, "/orgs");
+}
+
+export async function loadOrgs(): Promise<RankEntry[] | null> {
+  try {
+    const response = await fetch(orgsUrl(), { cache: "no-store", signal: AbortSignal.timeout(15000) });
+    if (response.status === 404) return null;
+    if (!response.ok) return null;
+    const data = await response.json();
+    const rows = asRows(data.orgs ?? data.factions);
+    return rows;
+  } catch {
+    return null;
+  }
+}
+
 export async function loadRankings(): Promise<RankPayload | null> {
   try {
-    const response = await fetch(rankingsUrl(), { next: { revalidate: 60 }, signal: AbortSignal.timeout(5000) });
+    const response = await fetch(rankingsUrl(), { next: { revalidate: 60 }, signal: AbortSignal.timeout(15000) });
     if (!response.ok) return null;
     const data = await response.json();
     if (!data || typeof data !== "object") return null;
